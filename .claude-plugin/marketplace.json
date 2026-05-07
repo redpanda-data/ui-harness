@@ -1,0 +1,37 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ui-harness",
+  "owner": {
+    "name": "Redpanda Data"
+  },
+  "metadata": {
+    "description": "React/TypeScript frontend + Go backend enforcement harness for Claude Code -- 92 hooks, 51 skills, 9 agents, 5 routines"
+  },
+  "plugins": [
+    {
+      "name": "frontend-skills",
+      "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks (101 scripts) enforce patterns on every edit. Green != done: `test-warning-check` + `ci-warning-audit` block passing tests with DeprecationWarning / React `act()` / unhandled rejection noise (local + `gh run view --log` on green CI). 51 skills from TDD through CI-green PR, including /diagnose feedback-loop-first 6-phase debugger + /triage multi-tracker (gh + acli) state machine + /steelman anti-sycophancy guard + /snyk-ux-security JS+Go per-path vuln sweep (exploitability-triage first gate via `bun why`/`go mod why`/`govulncheck`; top-level direct dep bump first, parent dep second, resolutions/overrides/replace last resort only; React 18 pin + changelog-walked majors + no-deferral escalation; Go `go get -u` + `go mod tidy` + `govulncheck` verify). 21 LLM failure modes enforced (7 Karpathy single-agent + 14 MAST multi-agent, Cemri et al. NeurIPS 2025). OWASP + STRIDE + snyk/bun audit. Core Web Vitals perf gate. bun.lock + yarn.lock parity enforced. Worktree isolation + branch safety. MCP ban with CLI redirect (~20x savings). Agent-browser integration (~91% token reduction). 9 agents (3-hat plan review + karpathy reference), 5 routines. Opus 4.7 tuned. POSIX-friendly.",
+      "version": "4.10.2",
+      "source": {
+        "source": "github",
+        "repo": "redpanda-data/ui-harness"
+      },
+      "x-updatedAt": "2026-05-06",
+      "x-includes": {
+        "instructions": [
+          "CLAUDE.md",
+          "AGENTS.md"
+        ],
+        "settings": "settings.json"
+      },
+      "x-changelog": {
+        "4.10.2": "2026-05-06 -- Codex hook parity pass: map Claude PostToolUseFailure into Codex PostToolUse, add a Codex PermissionRequest adapter that reuses approval-safe Bash/MCP deny guardrails, and regenerate Codex hooks so the plugin uses every supported Codex lifecycle event with an equivalent harness behavior.",
+        "4.10.1": "2026-05-06 -- Codex marketplace packaging fix: point Codex plugin hooks at a Codex-supported lifecycle file, regenerate .codex/hooks.json from the manifest, refresh stale install-surface copy (92 hooks / 100 scripts / 51 skills / 9 agents / 5 routines), and bump marketplace metadata for upgrade detection.",
+        "4.10.0": "2026-04-29 -- Sync mattpocock/skills (Apr 17 -> Apr 29). New `/diagnose` skill ported verbatim: feedback-loop-first 6-phase debug discipline (build loop -> reproduce -> 3-5 ranked falsifiable hypotheses -> instrument with `[DEBUG-prefix]` cleanup grep -> fix at correct seam + regression test -> cleanup + post-mortem hand-off to `/improve-codebase-architecture`); 10 ranked Phase-1 strategies (failing test, curl, CLI fixture diff, headless browser, replay, throwaway harness, fuzz, `git bisect run`, differential, HITL); ships `scripts/hitl-loop.template.sh`. Merged `github-triage` + `triage-issue` into single `/triage` (multi-tracker: `tracker-github.md` via `gh issue`, `tracker-jira.md` via `acli jira workitem`); bug-investigation + TDD-fix-plan absorbed as sub-mode; 5 canonical state roles map to project-specific labels/statuses; AI-disclaimer required on every triage comment. Vague-prose domain-glossary + ADR awareness added to `/tdd`, `/improve-codebase-architecture`, `/zoom-out`, `/triage` -- soft-dep, degrades gracefully when no `CONTEXT.md`. Upstream content merged while preserving 3-hat fan-out: `improve-codebase-architecture/LANGUAGE.md` (canonical vocab module/interface/seam/adapter/depth/leverage/locality + deletion test + interface-is-test-surface + one-vs-two-adapters); `tdd/tests.md` (good vs bad tests -- behaviour through public interface, never impl); `domain-model/ADR-FORMAT.md` 'what qualifies' enriched (boundary decisions, invisible constraints, non-obvious rejections). Skills 48 -> 51. +96 eval checks (test-triage, test-diagnose, test-domain-model-merge); test-tdd patched. Skipped per direction: caveman, git-guardrails, to-prd/to-issues, /setup-matt-pocock-skills explicit pointer.",
+        "4.9.0": "2026-04-23 -- Green != done warnings gate (+2 hooks, 89->91 wired / 98->100 scripts). `test-warning-check.sh` (PostToolUse Bash) scans passing `vitest`/`bun test`/`playwright`/`tsgo`/`biome`/`lint` output for curated patterns: Node `DeprecationWarning` + `ExperimentalWarning` + `(node:...) XxxWarning`, React `act()`/missing-key/DOM-nesting/prop-type/bad-setstate/non-boolean-attr, unhandled rejection / unhandled error, vitest `stderr |` during test, skipped-test counts, `@ts-expect-error` / `@ts-ignore`, `npm WARN deprecated`. Per-finding escape `// allow: test-warning` in test file; env `TEST_WARNINGS_ALLOW=1`. 3x same-kind streak escalates. `ci-warning-audit.sh` (Stop) fetches `gh run view --log` on green PR CI (per-SHA cache, 45s timeout), greps same pattern, warns with file:line sample. Gates: feature branch, session touched code, PR exists, all checks SUCCESS. Disable via `CI_WARNING_AUDIT=0`. CLAUDE.md Tests section adds green-not-done rule. /tdd `When Done` checklist adds zero-warnings local + CI log audit. Why: tests can be green while runtime spews deprecations / logs errors / leaks unhandled rejections -- noise that rots into real bugs when the libs actually remove the API. Agent must now clean before calling it done.",
+        "4.8.0": "2026-04-22 -- /steelman anti-sycophancy skill, opt-in via slash only. Forces strongest counter-case with repo evidence before agreeing with user claims (factual/causal/architectural only -- preference/goal/scope declined). No ambient CLAUDE.md rule, no automatic hook, no telemetry script -- plugin consumers see zero behavior change unless they type `/steelman`. Skills 47 -> 48.",
+        "older": "see CHANGELOG.md for full history"
+      }
+    }
+  ]
+}

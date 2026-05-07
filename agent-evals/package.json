@@ -1,0 +1,14 @@
+{
+  "name": "skills-agent-evals",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "eval": "npx @vercel/agent-eval",
+    "eval:dry": "npx @vercel/agent-eval --dry",
+    "eval:playground": "npx @vercel/agent-eval playground"
+  },
+  "devDependencies": {
+    "@vercel/agent-eval": "latest",
+    "vitest": "^4.1.0"
+  }
+}

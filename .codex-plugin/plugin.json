@@ -1,0 +1,63 @@
+{
+  "name": "frontend-skills",
+  "version": "4.10.2",
+  "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks (101 scripts) enforce patterns on every edit. Green != done: `test-warning-check` (local Bash PostToolUse) + `ci-warning-audit` (Stop, scans `gh run view --log`) block passing tests with DeprecationWarning / React `act()` / unhandled rejection / `@ts-ignore` noise. 51 skills from TDD through CI-green PR, including /diagnose feedback-loop-first 6-phase debugger + /triage multi-tracker (gh + acli) state machine + /steelman anti-sycophancy guard + /snyk-ux-security JS+Go per-path vuln sweep (exploitability-triage first gate, top-level-first upgrade ladder, React 18 pin, `govulncheck` for Go). 21 LLM failure modes (7 Karpathy single-agent + 14 MAST multi-agent, Cemri et al. NeurIPS 2025), OWASP + STRIDE, Core Web Vitals gate, bun.lock + yarn.lock parity, worktree isolation + branch safety, MCP ban with CLI redirect (~20x savings), agent-browser integration (~91% token reduction). 9 agents (3 plan-review hats + karpathy reference), 5 routines. Single-source manifest codegen. Opus 4.7 tuned. POSIX-friendly.",
+  "author": {
+    "name": "Redpanda Data",
+    "url": "https://github.com/redpanda-data"
+  },
+  "homepage": "https://github.com/redpanda-data/ui-harness",
+  "repository": "https://github.com/redpanda-data/ui-harness",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "typescript",
+    "frontend",
+    "tdd",
+    "accessibility",
+    "hooks",
+    "skills",
+    "agents",
+    "quality-gate",
+    "routines",
+    "sandcastle",
+    "session-logging",
+    "intent-detect",
+    "caveman"
+  ],
+  "skills": "./",
+  "hooks": "./hooks/codex-hooks.json",
+  "interface": {
+    "displayName": "Frontend Skills",
+    "shortDescription": "React/TypeScript + Go enforcement harness \u2014 92 hooks, 101 scripts, 51 skills, 9 agents, 5 routines",
+    "longDescription": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks across 101 scripts enforce patterns on every edit, including accessibility, Tailwind, React Compiler, Zustand, TanStack Router, connect-query, env validation, strict TypeScript, unhappy paths, security, warnings, CI, and PR feedback completeness. 51 skills guide the development lifecycle from TDD through CI-green PR, including /diagnose, /triage, /steelman, /snyk-ux-security, and domain-model/ADR workflows. 9 agents support review and planning hats. 5 routines automate recurring workflows. Codex packaging maps every supported equivalent lifecycle event, including PermissionRequest and PostToolUse failure handling, while Claude packaging keeps the full hook surface.",
+    "developerName": "Redpanda Data",
+    "category": "Development",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/redpanda-data/ui-harness",
+    "defaultPrompt": [
+      "Set up the frontend development lifecycle",
+      "Run the full quality gate on my changes",
+      "Review this PR and fix all findings"
+    ]
+  },
+  "x-updatedAt": "2026-05-06",
+  "x-includes": {
+    "instructions": [
+      "CLAUDE.md",
+      "AGENTS.md"
+    ],
+    "settings": "settings.json"
+  },
+  "x-changelog": {
+    "4.10.2": "2026-05-06 -- Codex hook parity pass: map Claude PostToolUseFailure into Codex PostToolUse, add a Codex PermissionRequest adapter that reuses approval-safe Bash/MCP deny guardrails, and regenerate Codex hooks so the plugin uses every supported Codex lifecycle event with an equivalent harness behavior.",
+    "4.10.1": "2026-05-06 -- Codex marketplace packaging fix: point Codex plugin hooks at a Codex-supported lifecycle file, regenerate .codex/hooks.json from the manifest, refresh stale install-surface copy (92 hooks / 100 scripts / 51 skills / 9 agents / 5 routines), and bump marketplace metadata for upgrade detection.",
+    "4.10.0": "2026-04-29 -- Sync mattpocock/skills (Apr 17 -> Apr 29). New `/diagnose` skill ported verbatim: feedback-loop-first 6-phase debug discipline (build loop -> reproduce -> 3-5 ranked falsifiable hypotheses -> instrument with `[DEBUG-prefix]` cleanup grep -> fix at correct seam + regression test -> cleanup + post-mortem hand-off to `/improve-codebase-architecture`); 10 ranked Phase-1 strategies; ships `scripts/hitl-loop.template.sh`. Merged `github-triage` + `triage-issue` into single `/triage` (multi-tracker: `tracker-github.md` via `gh issue`, `tracker-jira.md` via `acli jira workitem`); bug-investigation + TDD-fix-plan absorbed as sub-mode; 5 canonical state roles map to project-specific labels/statuses; AI-disclaimer required on every triage comment. Vague-prose domain-glossary + ADR awareness added to `/tdd`, `/improve-codebase-architecture`, `/zoom-out`, `/triage` -- soft-dep, degrades gracefully when no `CONTEXT.md`. Upstream content merged while preserving 3-hat fan-out: `improve-codebase-architecture/LANGUAGE.md` (canonical vocab + deletion test); `tdd/tests.md` (good vs bad tests); `domain-model/ADR-FORMAT.md` 'what qualifies' enriched. Skills 48 -> 51. +96 eval checks (test-triage, test-diagnose, test-domain-model-merge); test-tdd patched. Skipped per direction: caveman, git-guardrails, to-prd/to-issues, /setup-matt-pocock-skills explicit pointer.",
+    "4.9.0": "2026-04-23 -- Green != done warnings gate (+2 hooks, 89->91 wired / 98->100 scripts). `test-warning-check.sh` (PostToolUse Bash) scans passing `vitest`/`bun test`/`playwright`/`tsgo`/`biome`/`lint` output for curated warning patterns: Node `DeprecationWarning` + `ExperimentalWarning` + `(node:...) XxxWarning`, React `act()`/missing-key/DOM-nesting/prop-type/bad-setstate/non-boolean-attr, unhandled promise rejection / unhandled error, vitest `stderr |` during test, skipped-test counts, `@ts-expect-error` / `@ts-ignore`, `npm WARN deprecated`. Per-finding escape `// allow: test-warning` in test file with reason; env `TEST_WARNINGS_ALLOW=1`. 3x same-kind streak escalates via systemMessage. `ci-warning-audit.sh` (Stop) fetches `gh run view <id> --log` on green PR CI (per-SHA cache, 45s timeout), greps same pattern, warns with file:line sample + fetch-full command. Gates: feature branch, session touched code, PR exists, all checks SUCCESS (pending/fail defer to lifecycle-stop). Disable via `CI_WARNING_AUDIT=0`. CLAUDE.md Tests section adds green-not-done rule. tdd/SKILL.md `When Done` adds zero-warnings local + CI log audit checkboxes. Why: tests can be green while runtime spews deprecations / logs errors / leaks unhandled rejections -- noise rots into real bugs when the libs actually remove the API. Agent must clean before calling it done.",
+    "4.8.0": "2026-04-22 -- /steelman anti-sycophancy skill (opt-in only). New skill at steelman/SKILL.md argues strongest opposite case with repo evidence on user assertions -- factual/causal/architectural claim types only (preference/goal/scope declined). Procedure: identify claim -> fan-out evidence gather (grep, read, run) -> write counter-argument with file:line refs -> verdict (confirmed | contradicted | mixed). User-invoked via `/steelman` slash only. **No ambient CLAUDE.md rule, no automatic hook fire, no telemetry log script** -- plugin consumers see zero behavior change unless they type `/steelman`. Ambient premise-check directive + jsonl telemetry were considered and held back pending real-world feedback on the opt-in surface; re-evaluate once /steelman fire-rate data exists from dogfooding. Why: LLM sycophancy risk when the user asserts something wrong and the model agrees by default -- /steelman forces the strongest counter-case with repo evidence before proceeding. Skills 47 -> 48 (registers the skill file that was previously on disk but unlisted).",
+    "older": "see CHANGELOG.md for full history"
+  }
+}

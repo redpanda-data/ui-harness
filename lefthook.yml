@@ -1,0 +1,26 @@
+# lefthook.yml — Pre-push quality gate (<400ms)
+#
+# Install:
+#   brew install lefthook && lefthook install
+#
+# What it checks (changed files only):
+#   - TypeScript type checking (tsgo incremental)
+#   - Biome lint (changed files only)
+#
+# Why pre-push and not pre-commit:
+#   - Developers can commit freely (WIP, messy, whatever)
+#   - Gate only fires when code leaves the machine
+#   - Catches the #1 and #2 CI failure causes: type errors + lint
+
+pre-push:
+  parallel: true
+  commands:
+    typecheck:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: bun run type:check
+    lint:
+      glob: "*.{ts,tsx,js,jsx,mjs,mts}"
+      run: bun run lint:file -- {push_files}
+    manifest-sync:
+      glob: "{skill-manifest.json,.claude/settings.json,hooks/hooks.json}"
+      run: bash scripts/generate-hook-configs.sh --check

@@ -1,0 +1,9 @@
+node_modules/
+redpanda-evals/**/*.go
+redpanda-evals/**/*.sh
+
+# caveman-compress backups (per-user, not versioned)
+*.original.md
+
+# macOS finder metadata
+.DS_Store

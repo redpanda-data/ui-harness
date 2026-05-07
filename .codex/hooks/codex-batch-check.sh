@@ -1,0 +1,1 @@
+../../codex-compat/scripts/codex-batch-check.sh
