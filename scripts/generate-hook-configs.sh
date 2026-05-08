@@ -142,6 +142,25 @@ NEW_PLUGIN=$(jq --arg prefix '"${CLAUDE_PLUGIN_ROOT}/.claude/hooks' '
 
 NEW_CODEX_PLUGIN=$(_build_codex '"${CLAUDE_PLUGIN_ROOT}/.claude/hooks' '"')
 
+_validate_hook_script_inventory() {
+  # Every executable-ish file in .claude/hooks should be either a lifecycle hook
+  # in the manifest, a Codex-only adapter, a support library, or a manual utility.
+  # This catches silent gaps where a real hook script exists but never runs.
+  local _manifest_scripts _exempt_scripts _unaccounted
+  _manifest_scripts=$(jq -r '.hooks | .. | .[]? | select(type=="string")' "$MANIFEST" | grep -E '\.sh$' | sort -u)
+  _exempt_scripts=$(jq -r '((.supportScripts // []) + (.manualScripts // []) + (.codexOnlyHooks // []))[]?' "$MANIFEST" | sort -u)
+  _unaccounted=$(comm -23 \
+    <(find .claude/hooks -maxdepth 1 -type f -name '*.sh' -exec basename {} \; | sort -u) \
+    <(printf '%s\n%s\n' "$_manifest_scripts" "$_exempt_scripts" | awk 'NF' | sort -u) \
+  )
+  if [ -n "$_unaccounted" ]; then
+    echo "ERROR: hook scripts exist but are neither configured nor exempted:" >&2
+    echo "$_unaccounted" >&2
+    echo "Add them under .hooks or document them in supportScripts/manualScripts/codexOnlyHooks in $MANIFEST." >&2
+    return 1
+  fi
+}
+
 # Merge permissions from existing settings.json (hand-edited, not generated)
 if [ -f ".claude/settings.json" ]; then
   _perms=$(jq '.permissions // empty' .claude/settings.json)
@@ -177,7 +196,10 @@ case "$MODE" in
       echo "DRIFT: hooks/codex-hooks.json ≠ manifest Codex subset" >&2
       _drift=1
     fi
-    [ "$_drift" = "0" ] && echo "OK: both configs match manifest"
+    if ! _validate_hook_script_inventory; then
+      _drift=1
+    fi
+    [ "$_drift" = "0" ] && echo "OK: hook configs match manifest and hook script inventory is accounted for"
     exit $_drift
     ;;
   apply)
@@ -216,6 +238,7 @@ case "$MODE" in
       echo "WARN: $_missing scripts missing" >&2
       exit 1
     fi
+    _validate_hook_script_inventory
     ;;
   *)
     echo "Usage: $0 [--apply|--check]" >&2

@@ -4,6 +4,8 @@
 
 Hooks enforce patterns real-time, skills guide workflow, orchestration layer ensure nothing ships without tests, accessibility, type safety, code review -- zero babysit.
 
+**Surface area:** 48 skills, 101 hook scripts, 97 Claude hook commands, 87 Codex hook commands, 9 agents, 5 routines.
+
 <p align="center">
   <img src="docs/screenshots/plugin-card.png" alt="Frontend Skills plugin card -- React/TypeScript skills, hooks, and agents for Claude Code and Codex" width="720">
 </p>
