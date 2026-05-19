@@ -67,6 +67,7 @@
         "conventional-commits-check.sh",
         "branch-safety-check.sh",
         "bash-verbose-guard.sh",
+        "github-write-guard.sh",
         "rtk-rewrite.sh"
       ],
       "mcp__.*": [
