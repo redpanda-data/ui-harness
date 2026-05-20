@@ -1,16 +1,28 @@
 # Codex Compatibility Reference
 
-## codex-batch-check.sh
+## Current Codex Hook Compatibility
 
-Stop hook wrapper. Runs all PostToolUse Edit|Write checks on changed files.
-Reuses `.claude/hooks/` scripts. No duplication.
-Handles JS/TS, CSS/SCSS (tailwind-check), package.json (bundle-guard).
+Codex hook support is no longer Bash-only. Prefer direct translation first.
 
-> Script: [`scripts/codex-batch-check.sh`](scripts/codex-batch-check.sh)
+## Compatibility matrix
 
-## .codex/hooks.json template
+| Claude Code hook shape | Codex target | Status | Notes |
+| --- | --- | --- | --- |
+| `SessionStart` command | `SessionStart` | direct | Codex supports start-source matchers. |
+| `UserPromptSubmit` command | `UserPromptSubmit` | direct | Codex ignores matchers for this event. |
+| `PreToolUse` / `PostToolUse` `Bash` | same event + matcher | direct | Regex matcher over tool name. |
+| `PreToolUse` / `PostToolUse` `Edit|Write` | same event + `"matcher": "Edit\\|Write"` | direct | Codex maps aliases to `apply_patch`. |
+| `PreToolUse` / `PostToolUse` `apply_patch` | same event + `apply_patch` | direct | Prefer `Edit\\|Write` when sharing config with Claude. |
+| `PreToolUse` / `PostToolUse` `mcp__.*` | same event + MCP matcher | direct | Hook scripts must tolerate Codex MCP payload differences. |
+| `PermissionRequest` `Bash`, `apply_patch`, MCP | `PermissionRequest` | direct with shim | Only if script handles Codex decision fields. |
+| Claude `if` filters | split script-side checks | direct with shim | Codex matcher is regex over tool name, not args. Move arg logic into script. |
+| `PostToolUseFailure` | none or `Stop` fallback | fallback only | Codex does not provide same event in this compatibility layer. |
+| `PostToolBatch`, `FileChanged`, `PreCompact`, `PostCompact`, `SessionEnd`, `Notification`, subagent events | none | unsupported | Do not pretend parity. Use AGENTS.md soft guidance or explicit scripts. |
+| `http`, `prompt`, `agent`, `mcp_tool` hook handlers | command shim or unsupported | direct with shim / unsupported | Codex compatibility target is command hooks. |
 
-Generate from `.claude/settings.json`. Copy PreToolUse Bash, SessionStart, Stop hooks direct. Add batch checker as Stop hook.
+## Direct `.codex/hooks.json` template
+
+Generate from `.claude/settings.json`. Copy supported events directly. Add the batch checker only as fallback only for hooks that cannot safely run per-event.
 
 ```json
 {
@@ -45,6 +57,15 @@ Generate from `.claude/settings.json`. Copy PreToolUse Bash, SessionStart, Stop 
     ],
     "PreToolUse": [
       {
+        "matcher": "Edit\\|Write\\|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/violation-nudge.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          }
+        ]
+      },
+      {
         "matcher": "Bash",
         "hooks": [
           {
@@ -53,16 +74,38 @@ Generate from `.claude/settings.json`. Copy PreToolUse Bash, SessionStart, Stop 
           },
           {
             "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/llm-test-flags.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/conventional-commits-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
           {
             "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/conventional-commits-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mcp-ban.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Edit\\|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/react-rules-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          },
+          {
+            "type": "command",
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tailwind-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          },
+          {
+            "type": "command",
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/unhappy-path-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
@@ -78,40 +121,22 @@ Generate from `.claude/settings.json`. Copy PreToolUse Bash, SessionStart, Stop 
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.codex/hooks/codex-batch-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0",
-            "statusMessage": "Running code quality checks on changed files..."
-          },
-          {
-            "type": "command",
             "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/biome-autofix.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           },
           {
             "type": "command",
             "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/typecheck-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "Bash|mcp__.*|Edit\\|Write",
+        "hooks": [
           {
             "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/react-doctor-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/registry-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/orchestration-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/test-perf-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/lifecycle-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/violation-summary-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/codex-permission-request-guard.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
       }
@@ -120,16 +145,44 @@ Generate from `.claude/settings.json`. Copy PreToolUse Bash, SessionStart, Stop 
 }
 ```
 
-**Notes:**
-- SessionStart, UserPromptSubmit, PreToolUse Bash, PostToolUse Bash, Stop hooks identical on Codex
-- PostToolUse Edit|Write NOT in `.codex/hooks.json`. `codex-batch-check.sh` auto-discovers `*-check.sh` scripts at Stop time
-- `_hook-lib.sh` and `shared/hook-lib.sh` must be accessible alongside check scripts
+## Batch fallback: `codex-batch-check.sh`
 
-## Codex Limitations: SubagentStart/SubagentStop
+Stop hook wrapper. Runs selected Claude `PostToolUse`-style checks on changed files when direct mapping is impossible or unsafe. Reuses `.claude/hooks/` scripts. No duplication. Handles JS/TS, CSS/SCSS via `tailwind-check`, and `package.json` via `bundle-guard`.
 
-Codex **no** support `SubagentStart`/`SubagentStop`. Claude Code only.
+> Script: [`scripts/codex-batch-check.sh`](scripts/codex-batch-check.sh)
 
-Self-review loop (phase 4b) needs these for session context injection + structured findings validation. **Workaround**: soft guidance in AGENTS.md. Findings schema (`agents/findings-schema.md`) markdown -- works anywhere. Agent definitions (`self-reviewer.md`, `adversarial-reviewer.md`, `code-reviewer.md`) readable by Codex. Output format best-effort without SubagentStop enforcement.
+Use this fallback only when:
+
+- a Claude event has no Codex equivalent;
+- a hook depends on Claude-only output fields;
+- a hook needs batch-level state rather than single tool payload;
+- you deliberately want end-of-turn enforcement instead of immediate feedback.
+
+Do not use batch fallback for ordinary `PostToolUse` `Edit|Write` checks. Map those directly.
+
+`_hook-lib.sh` and `shared/hook-lib.sh` must be accessible alongside check scripts.
+
+## Plugin-bundled hooks
+
+Codex supports plugin-bundled hooks when `[features].plugin_hooks = true`. Prefer packaging reusable compatibility hooks in a plugin rather than copying repo-local config everywhere.
+
+- Default path: `hooks/hooks.json` inside plugin root.
+- Manifest override: `.codex-plugin/plugin.json` can point `hooks` to a path or inline object.
+- Codex exposes `PLUGIN_ROOT` / `PLUGIN_DATA` and compatibility env vars `CLAUDE_PLUGIN_ROOT` / `CLAUDE_PLUGIN_DATA`.
+- Plugin hooks need user trust review before they run.
+
+## Output compatibility notes
+
+- `PreToolUse` and `PermissionRequest` support `systemMessage`; do not rely on Claude-only `additionalContext` here.
+- `SessionStart`, `UserPromptSubmit`, and `Stop` can return shared JSON output fields.
+- `continue`, `stopReason`, and `suppressOutput` are not portable for `PreToolUse` in this layer.
+- Move Claude `if` conditions into command scripts because Codex matchers do not inspect tool arguments.
+
+## Codex limitations: subagent and lifecycle events
+
+Codex does not fully match Claude Code events such as `SubagentStart`, `SubagentStop`, `PostToolBatch`, `FileChanged`, `PreCompact`, `PostCompact`, and `SessionEnd` in this compatibility layer.
+
+Self-review loop enforcement that depends on subagent hooks should become soft guidance in `AGENTS.md`. Findings schema (`agents/findings-schema.md`) and agent definitions remain readable by Codex, but output enforcement is best effort.
 
 ## AGENTS.md
 

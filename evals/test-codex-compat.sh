@@ -17,6 +17,8 @@ run_content_eval "$SKILL_DIR/SKILL.md" "Use when" "SKILL.md has trigger phrase"
 run_content_eval "$SKILL_DIR/SKILL.md" "Codex" "SKILL.md mentions Codex"
 run_content_eval "$SKILL_DIR/SKILL.md" "AGENTS.md" "SKILL.md mentions AGENTS.md"
 run_content_eval "$SKILL_DIR/SKILL.md" "Stop" "SKILL.md mentions Stop hook"
+run_content_eval "$SKILL_DIR/SKILL.md" "Edit\\|Write.*direct" "SKILL.md says Edit|Write maps directly"
+run_content_eval "$SKILL_DIR/SKILL.md" "compatibility matrix" "SKILL.md requires compatibility matrix"
 
 # ── REFERENCE.md content ────────────────────────────────────────
 
@@ -25,6 +27,9 @@ run_content_eval "$SKILL_DIR/REFERENCE.md" ".codex/hooks.json" "REFERENCE has ho
 run_content_eval "$SKILL_DIR/REFERENCE.md" "AGENTS.md" "REFERENCE has AGENTS.md template"
 run_content_eval "$SKILL_DIR/REFERENCE.md" "PreToolUse" "REFERENCE maps PreToolUse hooks"
 run_content_eval "$SKILL_DIR/REFERENCE.md" "SessionStart" "REFERENCE maps SessionStart hooks"
+run_content_eval "$SKILL_DIR/REFERENCE.md" '"matcher": "Edit\\|Write"' "REFERENCE maps Edit|Write directly"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "plugin-bundled hooks" "REFERENCE covers plugin-bundled hooks"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "fallback only" "REFERENCE keeps batch checker as fallback only"
 run_content_eval "$SCRIPT" "git diff --name-only" "script uses git diff for changed files"
 run_content_eval "$SCRIPT" "tool_name.*Write" "script simulates Write tool JSON"
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Stop hook for Codex: batch-run all PostToolUse Edit|Write checks on changed files.
-# Codex doesn't support Edit|Write matchers, so we run them at Stop instead.
+# Stop hook fallback for Codex: batch-run selected PostToolUse-style checks on changed files.
+# Modern Codex supports Edit|Write/apply_patch hooks directly; use this only for fallback-only checks.
 
 repo_root=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
