@@ -144,6 +144,13 @@ case "$tool_name" in
     msg='Box MCP banned. Use: box files:get <FILE_ID> --json / box folders:items 0 --json. Install: brew install boxcli.'
     ;;
 
+  # ── GitHub PR thread replies ─────────────────────────────────
+  # Keep top-level PR behavior, but don't let agents continue existing PR
+  # review discussions/threads as the authenticated human.
+  mcp__*github*__*thread*reply*|mcp__*GitHub*__*thread*reply*|mcp__*github*__*reply*thread*|mcp__*GitHub*__*reply*thread*)
+    msg='GitHub PR thread reply MCP banned. Ask the user first; for an explicitly approved reply use Bash with CLAUDE_ALLOW_PR_THREAD_REPLY=1 and the gh api replies endpoint.'
+    ;;
+
   # ── Microsoft 365 → m365 CLI ──
   mcp__claude_ai_Microsoft_365__*|mcp__microsoft365__*|mcp__m365__*)
     msg='M365 MCP banned. Use: m365 teams/outlook/sharepoint with -o json. Install: npm i -g @pnp/cli-microsoft365. Auth: m365 login.'
