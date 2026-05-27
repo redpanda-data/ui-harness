@@ -52,6 +52,11 @@ If Codex is unavailable or errors out, continue with your own review and set `co
 6. **DRY** -- no duplicated extractable logic
 7. **Performance** -- no re-renders, heavy deps lazy-loaded
 
+
+## Visual Review Evidence
+
+If the diff touches rendered frontend UI (`*.tsx`, CSS, routes, components, forms, dialogs, media, animations, browser/platform branches), check whether `/visual-review` evidence exists in the session or PR body. If absent, add a P1 testing gap recommending `/visual-review` or an explicit skip reason. Do not treat static hook success or unit tests as a substitute for browser screenshot/state/a11y review.
+
 ## Output
 
 Output a single JSON block per [findings-schema.md](findings-schema.md).

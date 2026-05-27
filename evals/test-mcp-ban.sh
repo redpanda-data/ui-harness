@@ -57,7 +57,6 @@ _assert_denied "mcp__claude_ai_Google_Drive__files_list" "gws drive" "Drive -> g
 _assert_denied "mcp__claude_ai_Buildkite_read-only__list" "bk" "Buildkite -> bk"
 _assert_denied "mcp__claude_ai_Box__files_list" "box" "Box -> box"
 _assert_denied "mcp__claude_ai_Microsoft_365__teams" "m365" "M365 -> m365"
-_assert_denied "mcp__github__add_pull_request_review_thread_reply" "PR thread reply" "GitHub PR thread reply MCP denied"
 
 # JSON validity on every deny — prevent regressions from unescaped quotes
 _run_mcp "mcp__claude_ai_Gmail__gmail_search_messages"

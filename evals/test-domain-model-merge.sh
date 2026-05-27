@@ -23,6 +23,13 @@ run_content_eval "$ICA_DIR/LANGUAGE.md" "Avoid.*[Bb]oundary|boundary.*overloaded
 run_content_eval "$ICA_DIR/SKILL.md" "LANGUAGE\\.md" "ICA SKILL.md references LANGUAGE.md"
 run_content_eval "$ICA_DIR/SKILL.md" "domain glossary|CONTEXT\\.md" "ICA SKILL.md references project domain glossary"
 run_content_eval "$ICA_DIR/SKILL.md" "ADR" "ICA SKILL.md references ADRs"
+run_file_eval "$ICA_DIR/HTML-REPORT.md" "HTML-REPORT.md exists in improve-codebase-architecture/"
+run_content_eval "$ICA_DIR/SKILL.md" "HTML report|HTML-REPORT\\.md" "ICA SKILL.md requires HTML report"
+run_content_eval "$ICA_DIR/SKILL.md" "OS temp|\\$TMPDIR|/tmp" "ICA SKILL.md writes report outside repo"
+run_content_eval "$ICA_DIR/SKILL.md" "Tailwind.*CDN|Mermaid.*CDN" "ICA SKILL.md uses Tailwind and Mermaid CDN report"
+run_content_eval "$ICA_DIR/HTML-REPORT.md" "Before / After diagram|before/after" "HTML report includes before/after diagrams"
+run_content_eval "$ICA_DIR/HTML-REPORT.md" "Recommendation strength|Strong.*Worth exploring.*Speculative" "HTML report includes recommendation strength"
+run_content_eval "$ICA_DIR/HTML-REPORT.md" "module, interface, implementation, depth, deep, shallow, seam, adapter, leverage, locality" "HTML report preserves canonical vocabulary"
 
 # ── tdd/tests.md ─────────────────────────────────────────────────
 run_file_eval "$TDD_DIR/tests.md" "tests.md exists in tdd/"
@@ -37,6 +44,15 @@ run_content_eval "$TDD_DIR/SKILL.md" "tests\\.md" "tdd SKILL.md references tests
 
 # ── domain-model/ADR-FORMAT.md enriched "What Qualifies" ─────────
 run_file_eval "$DM_DIR/ADR-FORMAT.md" "ADR-FORMAT.md exists in domain-model/"
+run_content_eval "$DM_DIR/CONTEXT-FORMAT.md" "Customer" "CONTEXT-FORMAT keeps compact term examples"
+if grep -qE "## Example Dialogue|## Flagged Ambiguities" "$DM_DIR/CONTEXT-FORMAT.md"; then
+  echo "  FAIL  CONTEXT-FORMAT omits upstream-removed relationship/dialogue/ambiguity sections"
+  FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: CONTEXT-FORMAT omits upstream-removed relationship/dialogue/ambiguity sections"
+else
+  echo "  PASS  CONTEXT-FORMAT omits upstream-removed relationship/dialogue/ambiguity sections"
+  PASS=$((PASS + 1))
+fi
 
 run_content_eval "$DM_DIR/ADR-FORMAT.md" "[Aa]rchitectural shape" "ADR-FORMAT lists architectural shape"
 run_content_eval "$DM_DIR/ADR-FORMAT.md" "[Ii]ntegration patterns" "ADR-FORMAT lists integration patterns"

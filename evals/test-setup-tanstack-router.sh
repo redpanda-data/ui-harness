@@ -267,6 +267,90 @@ run_hook_eval "$CHECK_SCRIPT" \
 
 rm -rf "$tmpdir"
 
+
+# ── Check 10: Warn on Query loader consumed via useLoaderData ─────
+
+tmpdir=$(mktemp -d)
+mkdir -p "$tmpdir/src/routes"
+tmpfile="$tmpdir/src/routes/dashboard.tsx"
+printf "import { createFileRoute } from '@tanstack/react-router'
+import { queryOptions, useQuery } from '@tanstack/react-query'
+const dashboardQueryOptions = () => queryOptions({ queryKey: ['dashboard'], queryFn: fetchDashboard })
+export const Route = createFileRoute('/dashboard')({ loader: ({ context }) => context.queryClient.prefetchQuery(dashboardQueryOptions()), component: Dashboard })
+function Dashboard() { const data = Route.useLoaderData(); return <div /> }
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "warn: Query-primed loader data read via useLoaderData" "active observer"
+
+rm -rf "$tmpdir"
+
+# ── Check 10: Allow Query loader consumed via useQuery ────────────
+
+tmpdir=$(mktemp -d)
+mkdir -p "$tmpdir/src/routes"
+tmpfile="$tmpdir/src/routes/dashboard.tsx"
+printf "import { createFileRoute } from '@tanstack/react-router'
+import { queryOptions, useQuery } from '@tanstack/react-query'
+const dashboardQueryOptions = () => queryOptions({ queryKey: ['dashboard'], queryFn: fetchDashboard })
+export const Route = createFileRoute('/dashboard')({ loader: ({ context }) => context.queryClient.prefetchQuery(dashboardQueryOptions()), component: Dashboard })
+function Dashboard() { const result = useQuery(dashboardQueryOptions()); return <div /> }
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "allow: Query-primed loader consumed via useQuery"
+
+rm -rf "$tmpdir"
+
+# ── Check 11: Warn when router Query cache lacks preload opt-out ─
+
+tmpfile="$_rt_tmpdir/test.tsx"
+printf "import { createRouter } from '@tanstack/react-router'
+const router = createRouter({ routeTree, context: { queryClient } })
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "warn: QueryClient router context without defaultPreloadStaleTime 0" "single cache owner"
+
+# ── Check 11: Allow router Query cache with preload opt-out ──────
+
+tmpfile="$_rt_tmpdir/test.tsx"
+printf "import { createRouter } from '@tanstack/react-router'
+const router = createRouter({ routeTree, context: { queryClient }, defaultPreloadStaleTime: 0 })
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "allow: QueryClient router context with defaultPreloadStaleTime 0"
+
+
+# ── Check 12: Warn when QueryClient context lacks typed root context ─
+
+tmpfile="$_rt_tmpdir/root.tsx"
+printf "import { createRootRoute } from '@tanstack/react-router'
+export const Route = createRootRoute({ component: App })
+const router = createRouter({ routeTree, context: { queryClient }, defaultPreloadStaleTime: 0 })
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "warn: QueryClient router context without createRootRouteWithContext" "createRootRouteWithContext"
+
+# ── Check 12: Allow typed root context with QueryClient ──────────
+
+tmpfile="$_rt_tmpdir/root.tsx"
+printf "import { createRootRouteWithContext } from '@tanstack/react-router'
+export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({ component: App })
+const router = createRouter({ routeTree, context: { queryClient }, defaultPreloadStaleTime: 0 })
+" > "$tmpfile"
+
+run_hook_eval "$CHECK_SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "allow: QueryClient router context with createRootRouteWithContext"
+
 # ── Check script content ─────────────────────────────────────────
 
 run_content_eval "$CHECK_SCRIPT" "react-router-dom" "check: bans react-router-dom"
@@ -277,6 +361,9 @@ run_content_eval "$CHECK_SCRIPT" "URLSearchParams" "check: bans URLSearchParams"
 run_content_eval "$CHECK_SCRIPT" "validateSearch" "check: requires validateSearch"
 run_content_eval "$CHECK_SCRIPT" "code splitting" "check: warns on route file exports"
 run_content_eval "$CHECK_SCRIPT" "nuqs" "check: suggests nuqs"
+run_content_eval "$CHECK_SCRIPT" "defaultPreloadStaleTime" "check: nudges router preload cache off with Query"
+run_content_eval "$CHECK_SCRIPT" "active observer" "check: nudges Query observer over useLoaderData"
+run_content_eval "$CHECK_SCRIPT" "createRootRouteWithContext" "check: nudges typed router context"
 run_content_eval "$CHECK_SCRIPT" "hook_block|hook_warn" "check: uses shared output functions"
 
 # ── Check 5b: Warn on bare location.href (no window. prefix) ────

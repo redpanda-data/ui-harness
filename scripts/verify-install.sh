@@ -44,7 +44,7 @@ PLUGIN_ROOT=""
 INSTALL_MODE="manual"
 
 # Check if installed as a plugin (pick latest version, not first)
-for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/ "$HOME/.claude/plugins/cache/skills/frontend-skills"/*/; do
+for dir in "$HOME/.claude/plugins/cache/skills/frontend-skills"/*/; do
   if [ -f "${dir}hooks/hooks.json" ]; then
     PLUGIN_ROOT="$dir"
     INSTALL_MODE="plugin"
@@ -455,7 +455,7 @@ if [ -n "$REMOTE" ]; then
   $JSON_MODE || echo ""
   $JSON_MODE || echo "--- Version Check (remote: $REMOTE) ---"
 
-  # Check if any hook is a symlink pointing to a ui-harness repo
+  # Check if any hook is a symlink pointing to a skills repo
   skills_repo=""
   for hook in ".claude/hooks/react-rules-check.sh" ".claude/hooks/enforce-toolchain.sh"; do
     if [ -L "$hook" ]; then

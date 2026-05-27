@@ -9,7 +9,7 @@ description: Install planning/project management skills -- PRD creation, impleme
 
 **Owned** (hook-integrated): brainstorming, domain-model, triage, diagnose, qa, zoom-out
 
-**Community**: to-prd, to-issues, write-a-skill
+**Matt Pocock/community**: grill-with-docs, prototype, to-prd, to-issues, handoff, write-a-skill
 
 **Optional**: setup-atlassian-workflow (Jira via acli, opt-in), codex-plugin-cc (cross-model review)
 
@@ -17,14 +17,14 @@ description: Install planning/project management skills -- PRD creation, impleme
 
 ```bash
 # Owned
-bunx skills@latest add redpanda-data/ui-harness/brainstorming --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/brainstorming --agent claude-code -y
 
 # Owned
-bunx skills@latest add redpanda-data/ui-harness/domain-model --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/triage --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/diagnose --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/qa --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/zoom-out --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/domain-model --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/triage --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/diagnose --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/qa --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/zoom-out --agent claude-code -y
 
 # Community
 bunx skills@latest add mattpocock/skills/write-a-skill --agent claude-code -y

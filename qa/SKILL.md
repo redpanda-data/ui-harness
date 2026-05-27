@@ -1,7 +1,9 @@
 ---
 name: qa
-description: "Interactive QA session where user reports bugs conversationally and agent files GitHub issues. Explores codebase in background for context. Use when user wants to report bugs, do QA, file issues conversationally, or mentions 'QA session'."
+description: "DEPRECATED. Prefer `/triage` for conversational bug/feature intake and issue filing. Do not use unless user explicitly says `/qa` or asks for legacy QA skill."
 ---
+
+> Deprecated: prefer replacement named in description. Keep only for backward compatibility.
 
 # QA Session
 

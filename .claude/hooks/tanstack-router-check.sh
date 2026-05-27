@@ -106,4 +106,51 @@ if echo "$added_lines" | grep -qE '\buseSearch\b'; then
   fi
 fi
 
+# ── Check 10: Router + Query cache ownership ─────────────────────
+# If a route loader primes TanStack Query, components should still consume
+# the data via useQuery/useSuspenseQuery so Query has an active observer.
+# Do not force suspense: useQuery is fine for deferred/non-blocking data.
+
+if echo "$file_path" | grep -qE '/routes/'; then
+  file_content="${file_content:-$(cat "$file_path" 2>/dev/null || true)}"
+
+  if echo "$file_content" | grep -qE 'queryClient\.(prefetchQuery|ensureQueryData|fetchQuery)|queryOptions\('; then
+    if echo "$added_lines" | grep -qE 'Route\.useLoaderData\(|\buseLoaderData\('; then
+      if ! hook_has_escape "router-query-loader-data"; then
+        hook_warn "Router loader is priming TanStack Query, but component reads loader data. Prefer useQuery() or useSuspenseQuery() so Query has an active observer. Escape: // allow: router-query-loader-data [reason]"
+      fi
+    fi
+  fi
+fi
+
+# ── Check 11: Disable router preload cache when Query owns cache ──
+# TanStack Router has its own preload cache. When QueryClient is in router
+# context, use defaultPreloadStaleTime: 0 so only Query controls caching.
+
+if echo "$added_lines" | grep -qE 'createRouter\s*\(' || echo "$added_lines" | grep -qE 'context\s*:\s*\{[^}]*queryClient'; then
+  file_content="${file_content:-$(cat "$file_path" 2>/dev/null || true)}"
+  if echo "$file_content" | grep -qE 'createRouter\s*\(' && echo "$file_content" | grep -qE 'context\s*:\s*\{[^}]*queryClient|context:\s*\{[^}]*queryClient|queryClient\s*[,}]'; then
+    if ! echo "$file_content" | grep -qE 'defaultPreloadStaleTime\s*:\s*0|defaultPreloadStaleTime:\s*0\b'; then
+      if ! hook_has_escape "router-query-preload-cache"; then
+        hook_warn "Router uses QueryClient context. Add defaultPreloadStaleTime: 0 so TanStack Query is the single cache owner. Escape: // allow: router-query-preload-cache [reason]"
+      fi
+    fi
+  fi
+fi
+
+# ── Check 12: Typed root context for QueryClient ──────────────────
+# If router context passes queryClient, root route should type it with
+# createRootRouteWithContext so loaders can access context.queryClient safely.
+
+if echo "$added_lines" | grep -qE 'createRootRoute\s*\(|context\s*:\s*\{[^}]*queryClient'; then
+  file_content="${file_content:-$(cat "$file_path" 2>/dev/null || true)}"
+  if echo "$file_content" | grep -qE 'context\s*:\s*\{[^}]*queryClient' && echo "$file_content" | grep -qE 'createRootRoute\s*\('; then
+    if ! echo "$file_content" | grep -qE 'createRootRouteWithContext'; then
+      if ! hook_has_escape "router-query-root-context"; then
+        hook_warn "Router passes queryClient context. Use createRootRouteWithContext<{ queryClient: QueryClient }>() so loaders get typed context. Escape: // allow: router-query-root-context [reason]"
+      fi
+    fi
+  fi
+fi
+
 exit 0

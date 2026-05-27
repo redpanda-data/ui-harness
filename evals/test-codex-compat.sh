@@ -53,3 +53,27 @@ run_content_eval "$REPO_ROOT/AGENTS.md" "type.scope" "AGENTS.md covers commit fo
 run_content_eval "$REPO_ROOT/AGENTS.md" "specificity" "AGENTS.md covers Tailwind rules"
 run_content_eval "$SKILL_DIR/REFERENCE.md" "conventional-commits" "hooks.json includes conventional-commits"
 run_content_eval "$SKILL_DIR/REFERENCE.md" "_hook-lib.sh" "REFERENCE mentions _hook-lib.sh requirement"
+
+
+# ── Claude Code recent hook/skill compatibility ────────────────
+run_file_eval "$REPO_ROOT/.claude/hooks/run-hook.sh" "run-hook.sh exists for Claude exec-form hooks"
+run_executable_eval "$REPO_ROOT/.claude/hooks/run-hook.sh" "run-hook.sh is executable"
+run_content_eval "$REPO_ROOT/.claude/settings.json" '"args": \[' "Claude settings use exec-form hook args"
+run_content_eval "$REPO_ROOT/.claude/settings.json" '"continueOnBlock": true' "Claude PostToolUse hooks can continue after block"
+run_content_eval "$REPO_ROOT/.claude/settings.json" '"skillOverrides"' "Claude settings declare skillOverrides"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "exec-form" "REFERENCE documents Claude exec-form hooks"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "continueOnBlock" "REFERENCE documents continueOnBlock compatibility"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "updatedToolOutput" "REFERENCE documents updatedToolOutput compatibility"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "skillOverrides" "REFERENCE documents skillOverrides compatibility"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "skill_activated" "REFERENCE documents skill activation telemetry"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "CLAUDE_EFFORT" "REFERENCE documents effort-aware hooks"
+run_content_eval "$SKILL_DIR/REFERENCE.md" "Claude-only progressive enhancement" "REFERENCE marks Claude-only enhancements"
+run_content_eval "$REPO_ROOT/.codex/hooks.json" '"command"' "Codex hooks keep command shims"
+if grep -q '"args"' "$REPO_ROOT/.codex/hooks.json"; then
+  echo "  FAIL  .codex/hooks.json uses Claude exec-form args; Codex compat should keep command shims"
+  FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: .codex/hooks.json should not rely on args"
+else
+  echo "  PASS  .codex/hooks.json avoids Claude-only args"
+  PASS=$((PASS + 1))
+fi

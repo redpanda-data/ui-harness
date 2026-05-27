@@ -699,6 +699,66 @@ _run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
 _assert_exit 0 "await invalidateQueries passes"
 _cleanup_test_file "$_f"
 
+
+echo "  unstable QueryClient in component (block):"
+_setup_test_file "$_f" "import { QueryClient } from '@tanstack/react-query';
+function App() { const queryClient = new QueryClient(); return <Provider client={queryClient} />; }"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 2 "unstable QueryClient blocks"
+_assert_stderr_contains "QueryClient must be stable" "explains stable query client"
+_cleanup_test_file "$_f"
+
+echo "  query rest destructuring (warn):"
+_setup_test_file "$_f" "const { data, ...query } = useQuery({ queryKey: ['users'], queryFn: fetchUsers });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 0 "rest destructuring warns"
+_assert_stderr_contains "rest destructuring" "explains rest destructuring"
+_cleanup_test_file "$_f"
+
+echo "  query result in deps (block):"
+_setup_test_file "$_f" "const usersQuery = useQuery({ queryKey: ['users'], queryFn: fetchUsers });
+useEffect(function syncUsers() {}, [usersQuery]);"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 2 "unstable deps block"
+_assert_stderr_contains "not stable" "explains unstable deps"
+_cleanup_test_file "$_f"
+
+echo "  queryFn without return (block):"
+_setup_test_file "$_f" "useQuery({ queryKey: ['users'], queryFn: async () => { await fetchUsers(); } });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 2 "void queryFn blocks"
+_assert_stderr_contains "queryFn must return" "explains return requirement"
+_cleanup_test_file "$_f"
+
+echo "  inline query options (warn):"
+_setup_test_file "$_f" "useQuery({ queryKey: ['users'], queryFn: fetchUsers });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 0 "inline query options warns"
+_assert_stderr_contains "queryOptions" "suggests queryOptions"
+_cleanup_test_file "$_f"
+
+
+echo "  queryKey missing direct queryFn arg (warn):"
+_setup_test_file "$_f" "useQuery({ queryKey: ['user'], queryFn: () => fetchUser(userId) });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 0 "missing query key dep warns"
+_assert_stderr_contains "userId" "names missing dep"
+_cleanup_test_file "$_f"
+
+echo "  queryKey includes direct queryFn arg (pass):"
+_setup_test_file "$_f" "useQuery({ queryKey: ['user', userId], queryFn: () => fetchUser(userId) });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 0 "included query key dep passes"
+_assert_stderr_not_contains "queryFn uses userId" "does not warn when key includes dep"
+_cleanup_test_file "$_f"
+
+echo "  queryKey deps ambiguous object arg (pass):"
+_setup_test_file "$_f" "useQuery({ queryKey: ['user'], queryFn: () => fetchUser({ userId }) });"
+_run_hook "query-pattern-check.sh" "$(_edit_json "$_f")"
+_assert_exit 0 "ambiguous object args skipped"
+_assert_stderr_not_contains "queryFn uses userId" "no noisy object-arg warning"
+_cleanup_test_file "$_f"
+
 _teardown_session
 
 # ═══════════════════════════════════════════════════════════════

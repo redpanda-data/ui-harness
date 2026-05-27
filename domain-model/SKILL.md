@@ -1,7 +1,9 @@
 ---
 name: domain-model
-description: "Grilling session that challenges plans against the project's domain model, spawns 3 parallel reviewer hats (product/engineering/design), sharpens terminology, and updates documentation (CONTEXT.md, ADRs) inline. Use when user wants to stress-test a plan, define ubiquitous language, create ADRs, or mentions 'domain model'."
+description: "LEGACY LOCAL. Prefer `/grill-with-docs` for docs-first domain grilling and CONTEXT.md/ADR updates. Use only when user explicitly requests `/domain-model` or local three-hat review."
 ---
+
+> Legacy: prefer `/grill-with-docs`. Keep only for backward compatibility with local three-hat workflow.
 
 # Domain Model
 

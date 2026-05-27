@@ -14,11 +14,20 @@ Hook use `\buseQuery\b` word boundaries. `useQueryClient` (stripped before match
 
 ## Cache Invalidation Patterns
 
-### Invalidate by Service Type Name
+### Invalidate by Connect Query Key
 
 ```tsx
+import { createConnectQueryKey, useTransport } from '@connectrpc/connect-query'
+import { TopicService } from './gen/topics_pb'
+
+const transport = useTransport()
+
 await queryClient.invalidateQueries({
-  queryKey: [listTopics.service.typeName],
+  queryKey: createConnectQueryKey({
+    schema: TopicService,
+    transport,
+    cardinality: 'finite',
+  }),
   exact: false,
 })
 ```
@@ -26,15 +35,22 @@ await queryClient.invalidateQueries({
 ### Mutation with Invalidation
 
 ```tsx
-import { useMutation } from '@connectrpc/connect-query'
-import { createTopic, listTopics } from './gen/topics-TopicService_connectquery'
+import { createConnectQueryKey, useMutation, useTransport } from '@connectrpc/connect-query'
+import { createTopic } from './gen/topics-TopicService_connectquery'
+import { TopicService } from './gen/topics_pb'
 
 function CreateTopicButton() {
   const queryClient = useQueryClient()
+  const transport = useTransport()
+
   const mutation = useMutation(createTopic, {
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [listTopics.service.typeName],
+        queryKey: createConnectQueryKey({
+          schema: TopicService,
+          transport,
+          cardinality: 'finite',
+        }),
         exact: false,
       })
     },

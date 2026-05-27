@@ -1,7 +1,9 @@
 ---
 name: request-refactor-plan
-description: Create a detailed refactor plan with tiny commits via user interview, then file it as a GitHub issue. Use when user wants to plan a refactor, create a refactoring RFC, or break a refactor into safe incremental steps.
+description: "DEPRECATED. Prefer `/improve-codebase-architecture` for refactor discovery, then `/to-issues` for tickets. Do not use unless user explicitly says `/request-refactor-plan`."
 ---
+
+> Deprecated: prefer replacement named in description. Keep only for backward compatibility.
 
 # Request Refactor Plan
 

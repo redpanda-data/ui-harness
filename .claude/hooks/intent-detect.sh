@@ -119,7 +119,9 @@ _current_branch=$(git branch --show-current 2>/dev/null || true)
 case "$_current_branch" in
   main|master|develop|"") ;;
   *)
-    directives="$directives\n[SCOPE-LOCK] On feature branch '$_current_branch'. Prefer committing here. Ask before creating new branches or PRs unless explicitly instructed."
+    if [ -n "$directives" ]; then
+      directives="$directives\n[SCOPE-LOCK] On feature branch '$_current_branch'. Prefer committing here. Ask before creating new branches or PRs unless explicitly instructed."
+    fi
     ;;
 esac
 

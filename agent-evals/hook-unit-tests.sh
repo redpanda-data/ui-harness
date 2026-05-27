@@ -7,8 +7,7 @@ set -euo pipefail
 #
 # Usage: bash agent-evals/hook-unit-tests.sh
 
-REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-HOOKS_DIR="$REPO_ROOT/.claude/hooks"
+HOOKS_DIR="$(cd "$(dirname "$0")/../.claude/hooks" && pwd)"
 PASS=0
 FAIL=0
 SKIP=0
@@ -342,18 +341,18 @@ _teardown_session
 
 # ═══════════════════════════════════════════════════════════════
 echo ""
-echo "━━━ session-env.sh (ui-harness repo excluded) ━━━"
+echo "━━━ session-env.sh (skills repo excluded) ━━━"
 # ═══════════════════════════════════════════════════════════════
 
-echo "  ui-harness repo (no package.json warning):"
-cd "$REPO_ROOT"
+echo "  skills repo (no package.json warning):"
+cd /Users/beniamin.malinski/Documents/git/skills
 _run_hook "session-env.sh" ""
 if echo "$_last_stderr" | grep -q "No package.json"; then
   FAIL=$((FAIL + 1))
-  echo -e "  ${RED}✗${NC} ui-harness repo still shows package.json warning"
+  echo -e "  ${RED}✗${NC} skills repo still shows package.json warning"
 else
   PASS=$((PASS + 1))
-  echo -e "  ${GREEN}✓${NC} ui-harness repo — no false warning"
+  echo -e "  ${GREEN}✓${NC} skills repo — no false warning"
 fi
 
 # ═══════════════════════════════════════════════════════════════

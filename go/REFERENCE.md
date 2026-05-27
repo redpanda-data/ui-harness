@@ -68,7 +68,10 @@ bun vitest run --related
 bun vitest run *.browser.test.tsx
 
 # 5. Browser smoke (if available)
-# claude-in-chrome: navigate to dev server, verify UI
+# scripts/skills-browser.sh / Playwright: navigate to dev server, verify UI
+
+# 6. Frontend diff: run /visual-review
+# screenshots + states + a11y + console + mobile/cross-browser where feasible
 ```
 
 ### Browser Verification
@@ -80,6 +83,18 @@ bun vitest run *.browser.test.tsx
 - `Monitor: bun run dev` -- watch ready, verify
 
 **When**: UI changes, route changes, visual regressions. **Skip**: pure logic, API, data-layer.
+
+### Visual Review Gate
+
+Frontend diff -> run `/visual-review` before `/commit-push-pr`, unless the change is docs-only, test-only, type-only, backend-only, or explicitly skipped with reason.
+
+Frontend diff includes:
+
+- `*.tsx`, `*.jsx`, `*.css`, `*.scss`, `*.html`
+- `src/routes/`, `src/pages/`, `src/app/`, `src/components/`, `components/ui/`
+- Tailwind/theme/config files that affect rendered UI
+
+Use `/visual-review` output for the PR screenshot table and test plan. Follow `visual-review/REFERENCE.md` PR evidence contract.
 
 ### Commit on Green
 
@@ -123,14 +138,16 @@ Each passing verify state = one commit. Format: `type(scope): what changed`.
 
 2. **Fix issues** from `/simplify`, commit
 
-3. **`/commit-push-pr`** -- handle:
+3. **`/visual-review`** -- if frontend diff and not already run in Phase 4. Capture screenshots, states, a11y/console issues, and cross-browser/mobile notes. Fix P0/P1 or record user-accepted skip/deferral.
+
+4. **`/commit-push-pr`** -- handle:
    - Categorized conventional commits
    - Branch strategy
    - Push with tracking
    - PR creation with structured body
    - CI monitor
 
-4. **`code-reviewer` agent** -- dispatch on PR for fresh-eyes review
+5. **`code-reviewer` agent** -- dispatch on PR for fresh-eyes review
 
 ### Security Gate
 

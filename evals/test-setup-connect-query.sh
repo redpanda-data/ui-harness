@@ -52,7 +52,7 @@ run_hook_eval "$SCRIPT" \
 
 _cq_tmpdir=$(mktemp -d /tmp/cq-evals-XXXXXX)
 tmpfile="$_cq_tmpdir/test.tsx"
-printf "// allow-direct-query: REST endpoint for legacy auth\nimport { useQuery } from '@tanstack/react-query'\nimport { listUsers } from '@connectrpc/connect-query'\n" > "$tmpfile"
+printf "// allow: direct-query REST endpoint for legacy auth\nimport { useQuery } from '@tanstack/react-query'\nimport { listUsers } from './gen/users-UserService_connectquery'\n" > "$tmpfile"
 
 run_hook_eval "$SCRIPT" \
   "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
@@ -63,7 +63,7 @@ run_hook_eval "$SCRIPT" \
 # ── Check 1: Ban raw useQuery from @tanstack/react-query with ConnectRPC ─
 
 tmpfile="$_cq_tmpdir/test.tsx"
-printf "import { useQuery } from '@tanstack/react-query'\nimport { listTopics } from '@buf/redpandadata_cloud.connectrpc_query-es'\n" > "$tmpfile"
+printf "import { useQuery } from '@tanstack/react-query'\nimport { useQuery as useConnectQuery } from '@connectrpc/connect-query'\nimport { listTopics } from './gen/topics-TopicService_connectquery'\n" > "$tmpfile"
 
 run_hook_eval "$SCRIPT" \
   "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
@@ -85,11 +85,22 @@ run_hook_eval "$SCRIPT" \
 # ── Check 1: Ban raw useMutation with ConnectRPC ─────────────────
 
 tmpfile="$_cq_tmpdir/test.tsx"
-printf "import { useMutation } from '@tanstack/react-query'\nimport { createTopic } from '@connectrpc/connect-query'\n" > "$tmpfile"
+printf "import { useMutation } from '@tanstack/react-query'\nimport { useMutation as useConnectMutation } from '@connectrpc/connect-query'\nimport { createTopic } from './gen/topics-TopicService_connectquery'\n" > "$tmpfile"
 
 run_hook_eval "$SCRIPT" \
   "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
   2 "block: useMutation from @tanstack/react-query with ConnectRPC"
+
+# tmpfile reused in tmpdir
+
+# ── Check 1: Allow current Connect Query hook syntax ─────────────
+
+tmpfile="$_cq_tmpdir/test.tsx"
+printf "import { useQuery, useMutation } from '@connectrpc/connect-query'\nimport { listTopics, createTopic } from './gen/topics-TopicService_connectquery'\nconst topics = useQuery(listTopics, { pageSize: 20 }, { staleTime: 30_000 })\nconst createTopicMutation = useMutation(createTopic, { onSuccess: () => queryClient.invalidateQueries({ queryKey: ['topics'] }) })\n" > "$tmpfile"
+
+run_hook_eval "$SCRIPT" \
+  "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
+  0 "allow: current Connect Query useQuery/useMutation syntax"
 
 # tmpfile reused in tmpdir
 
@@ -107,7 +118,7 @@ run_hook_eval "$SCRIPT" \
 # ── Check 2: Allow invalidateQueries with args ───────────────────
 
 tmpfile="$_cq_tmpdir/test.ts"
-printf "await queryClient.invalidateQueries({ queryKey: [listTopics.service.typeName], exact: false })\n" > "$tmpfile"
+printf "import { createConnectQueryKey, useTransport } from '@connectrpc/connect-query'\nimport { TopicService } from './gen/topics_pb'\nconst transport = useTransport()\nawait queryClient.invalidateQueries({ queryKey: createConnectQueryKey({ schema: TopicService, transport, cardinality: 'finite' }), exact: false })\n" > "$tmpfile"
 
 run_hook_eval "$SCRIPT" \
   "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"$tmpfile\"}}" \
@@ -158,6 +169,7 @@ run_content_eval "$SCRIPT" "hook_block|hook_warn" "hook uses shared output funct
 run_content_eval "$SCRIPT" "hook_has_escape" "hook respects escape hatch"
 run_content_eval "$SCRIPT" "typeName" "hook checks for \$typeName object literals"
 run_content_eval "$SCRIPT" "uses_connect_transport" "hook allows useTransport/callUnaryMethod pattern"
+run_content_eval "$SCRIPT" "@connectrpc/connect-query" "hook messages point to Connect Query runtime"
 
 # ── REFERENCE content ────────────────────────────────────────────
 

@@ -9,10 +9,6 @@
           },
           {
             "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/rtk-install-check.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/llm-env.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
@@ -67,10 +63,6 @@
           },
           {
             "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/github-write-guard.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/rtk-rewrite.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
@@ -81,33 +73,6 @@
           {
             "type": "command",
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/mcp-ban.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/read-size-guard.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "WebFetch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/webfetch-dedup.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Agent|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/subagent-length-cap.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
       }
@@ -407,10 +372,6 @@
           {
             "type": "command",
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/cache-telemetry-stop.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/metrics-summary-stop.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
       }

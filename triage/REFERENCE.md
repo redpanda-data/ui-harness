@@ -31,7 +31,7 @@ For root-cause investigation + a TDD fix plan, see [TDD Fix Plan Mode](#tdd-fix-
 
 ### Step 4: Grilling Session (if needed)
 
-Flesh out the issue to a complete spec. Use `/grill-me` for a fast grill, `/domain-model` when domain language sharpening matters.
+Flesh out the issue to a complete spec. Use `/grill-me` for a fast grill, `/grill-with-docs` when domain language/ADRs matter.
 
 ### Step 5: Apply Outcome
 

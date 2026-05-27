@@ -28,11 +28,13 @@ Run full commit-and-push flow below in one response.
 
 1. Check if review skill invoked this session:
    - `/simplify` -- small fixes/tweaks
-   - `/request-refactor-plan` -- refactors
+   - `/improve-codebase-architecture` -- refactors (prefer this; `/request-refactor-plan` is deprecated)
    - `/improve-codebase-architecture` -- cleanup (oversized files, shallow modules, tangled deps)
-   - `/design-an-interface` -- redesign module or layout
-2. If NONE ran: warn -- "Lifecycle requires review skill before shipping. Recommend: `/simplify` for small changes, `/request-refactor-plan` for refactors, `/improve-codebase-architecture` for cleanup."
-3. Proceed only if review skill ran or user confirm skip
+   - `/prototype` -- redesign module or layout (prefer this; `/design-an-interface` is deprecated)
+   - `/visual-review` -- browser-based review for frontend/visual diffs
+2. If frontend diff and `/visual-review` has not run: run `/visual-review` or record explicit skip reason before pushing.
+3. If NONE ran: warn -- "Lifecycle requires review skill before shipping. Recommend: `/simplify` for small changes, `/improve-codebase-architecture` for cleanup, `/visual-review` for frontend changes."
+4. Proceed only if review skill ran or user confirm skip
 
 ### Phase 1: Scope confirmation
 

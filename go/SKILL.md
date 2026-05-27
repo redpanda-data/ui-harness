@@ -18,7 +18,8 @@ Run all checks. Fix failures before proceed.
 3. `bun vitest run --related` (changed files)
 4. Route touched -> `bun vitest run *.browser.test.tsx`
 5. Dev server running -> browser smoke via `scripts/skills-browser.sh` (Vercel agent-browser). Skip if not installed.
-6. **When green: commit now.** One commit per passing state.
+6. Frontend diff -> run `/visual-review` (screenshots, states, a11y, console, mobile/cross-browser when feasible). Skip only with reason.
+7. **When green: commit now.** One commit per passing state.
 
 ## Phase 4b: Refine (Self-Review Loop)
 
@@ -36,8 +37,9 @@ Run all checks. Fix failures before proceed.
 
 1. Run `/simplify` -- review changed code for reuse, quality, efficiency
 2. Fix issues, commit
-3. Run `/commit-push-pr` -- conventional commits, push, open PR
-4. Dispatch `code-reviewer` agent (fresh-eyes review)
+3. Frontend diff and `/visual-review` not run this session -> run it now or record explicit skip reason
+4. Run `/commit-push-pr` -- conventional commits, push, open PR
+5. Dispatch `code-reviewer` agent (fresh-eyes review)
 
 ## Phase 5b: Iterate
 
@@ -75,6 +77,7 @@ Before start, check work to ship:
 | `self-reviewer` agent | 4b | Auto-dispatch on diff |
 | `adversarial-reviewer` agent | 4b | Conditional (>50 lines or auth/security) |
 | `/simplify` | 5 | Code quality review |
+| `/visual-review` | 4/5 | Frontend screenshot, state, a11y, console, mobile/cross-browser review when UI changed |
 | `/commit-push-pr` | 5 | Conventional commits + push + PR |
 | `code-reviewer` agent | 5 | Fresh-eyes review on PR |
 | `/resolve-pr-feedback` | 5b | Triage + fix review comments |

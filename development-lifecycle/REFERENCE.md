@@ -21,7 +21,7 @@ flowchart TD
     P1_RCA --> P3
 
     P2 --> Trivial{Trivial?<br/>< 3 tasks,<br/>no arch decisions}
-    Trivial -->|No| Grill[2b. Grill<br/>/domain-model]
+    Trivial -->|No| Grill[2b. Grill<br/>/grill-with-docs]
     Trivial -->|Yes| P3
     Grill --> P3
 
@@ -178,7 +178,7 @@ Small PRs = 2-3x faster review, higher feedback quality.
 
 **Mandatory gate plan->impl.**
 
-Post-plan, auto-`/domain-model`:
+Post-plan, auto-`/grill-with-docs`:
 
 1. Plan summary
 2. Challenge vs existing domain (CONTEXT.md, ADRs)

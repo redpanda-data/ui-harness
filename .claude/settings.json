@@ -1,4 +1,770 @@
 {
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "session-env.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "llm-env.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "user-prompt-context.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "intent-detect.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "post-compact-context.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "pre-compact.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "post-tool-failure.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "FileChanged": [
+      {
+        "matcher": "package.json|bun.lockb|package-lock.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-changed-deps.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "*.proto|*.graphql|*.graphqls",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-changed-schema.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "biome.jsonc|biome.json|tsconfig.json|tsconfig.*.json|vitest.config.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-changed-config.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "src/env.ts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-changed-env.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "skill-manifest.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-changed-manifest.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "WorktreeCreate": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "worktree-create.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "session-end.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "violation-nudge.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "enforce-toolchain.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "llm-test-flags.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "conventional-commits-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "branch-safety-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "bash-verbose-guard.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "rtk-rewrite.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "mcp-ban.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "continueOnBlock": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "vendor-file-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "ui-registry-warn.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "react-rules-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "tailwind-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "accessibility-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "zustand-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "tanstack-router-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "tanstack-router-gen.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "connect-query-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "react-compiler-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "env-validation-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "bundle-guard.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "test-perf-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "ux-copy-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "orchestration-guidance.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "form-mode-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "file-size-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "hook-location-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "mutation-side-effect-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "connect-error-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "connect-error-format-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "unhappy-path-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "tdd-prompt-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "error-boundary-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "field-mask-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "route-visual-test-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "legacy-linter-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "biome-ignore-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "legacy-import-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "test-convention-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "form-watch-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "as-cast-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "ts-no-escape-hatches-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "tsconfig-strict-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "llm-failure-mode-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "security-audit-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "mutation-naming-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "magic-number-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "disabled-button-tooltip-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "query-pattern-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "copyright-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "zustand-subscription-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "url-state-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "duplicate-function-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "mutation-onerror-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "edit-loop-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "lockfile-sync-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "connect-error-fieldmap-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "proto-form-parallel-state-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "form-setvalue-options-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "form-error-summary-check.sh"
+            ]
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "continueOnBlock": true,
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "llm-truncate.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "consecutive-failure-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "test-warning-check.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "subagent-start.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "self-reviewer|code-reviewer|adversarial-reviewer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "subagent-stop.sh"
+            ]
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "architecture-review-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "biome-autofix.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "typecheck-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "react-doctor-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "registry-check.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "orchestration-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "test-perf-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "quality-gate-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "lifecycle-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "pr-feedback-completeness-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "ci-warning-audit.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "perf-regression-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "violation-summary-stop.sh"
+            ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "cache-telemetry-stop.sh"
+            ]
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "deny": [
       "Bash(npm *)",
@@ -13,531 +779,11 @@
       "Bash(sleep *)"
     ]
   },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/session-env.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/rtk-install-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/llm-env.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/user-prompt-context.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/intent-detect.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/post-compact-context.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/pre-compact.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/post-tool-failure.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "FileChanged": [
-      {
-        "matcher": "package.json|bun.lockb|package-lock.json",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-changed-deps.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "*.proto|*.graphql|*.graphqls",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-changed-schema.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "biome.jsonc|biome.json|tsconfig.json|tsconfig.*.json|vitest.config.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-changed-config.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "src/env.ts",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-changed-env.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "skill-manifest.json",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-changed-manifest.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "WorktreeCreate": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/worktree-create.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/session-end.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit|Write|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/violation-nudge.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/enforce-toolchain.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/llm-test-flags.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/conventional-commits-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/branch-safety-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/bash-verbose-guard.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/github-write-guard.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/rtk-rewrite.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mcp-ban.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/read-size-guard.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "WebFetch",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/webfetch-dedup.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Agent|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/subagent-length-cap.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/vendor-file-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/ui-registry-warn.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/react-rules-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tailwind-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/accessibility-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/zustand-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tanstack-router-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tanstack-router-gen.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/connect-query-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/react-compiler-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/env-validation-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/bundle-guard.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/test-perf-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/ux-copy-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/orchestration-guidance.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/form-mode-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/file-size-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/hook-location-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mutation-side-effect-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/connect-error-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/connect-error-format-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/unhappy-path-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tdd-prompt-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/error-boundary-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/field-mask-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/route-visual-test-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/legacy-linter-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/biome-ignore-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/legacy-import-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/test-convention-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/form-watch-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/as-cast-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/ts-no-escape-hatches-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/tsconfig-strict-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/llm-failure-mode-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/security-audit-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mutation-naming-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/magic-number-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/disabled-button-tooltip-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/query-pattern-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/copyright-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/zustand-subscription-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/url-state-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/duplicate-function-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mutation-onerror-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/edit-loop-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/lockfile-sync-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/connect-error-fieldmap-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/proto-form-parallel-state-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/form-setvalue-options-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/form-error-summary-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/llm-truncate.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/consecutive-failure-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/test-warning-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/subagent-start.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "self-reviewer|code-reviewer|adversarial-reviewer",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/subagent-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/architecture-review-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/biome-autofix.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/typecheck-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/react-doctor-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/registry-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/orchestration-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/test-perf-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/quality-gate-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/lifecycle-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/pr-feedback-completeness-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/ci-warning-audit.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/perf-regression-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/violation-summary-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/cache-telemetry-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          },
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/metrics-summary-stop.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
-      }
-    ]
+  "skillOverrides": {
+    "domain-model": "user-invocable-only",
+    "ubiquitous-language": "user-invocable-only",
+    "request-refactor-plan": "user-invocable-only",
+    "qa": "user-invocable-only",
+    "design-an-interface": "user-invocable-only"
   }
 }

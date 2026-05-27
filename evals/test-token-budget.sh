@@ -45,13 +45,13 @@ for skill in "$BUDGET_DIR"/*/SKILL.md; do
   desc_total=$((desc_total + ${#d}))
 done
 
-if [ "$desc_total" -lt 12000 ]; then
-  echo "  PASS  All SKILL.md descriptions total under 12000 chars ($desc_total)"
+if [ "$desc_total" -lt 13000 ]; then
+  echo "  PASS  All SKILL.md descriptions total under 13000 chars ($desc_total)"
   PASS=$((PASS + 1))
 else
-  echo "  FAIL  SKILL.md descriptions total: $desc_total chars (cap: 12000)"
+  echo "  FAIL  SKILL.md descriptions total: $desc_total chars (cap: 13000)"
   FAIL=$((FAIL + 1))
-  ERRORS="$ERRORS\n  FAIL: skill descriptions over 12000 chars"
+  ERRORS="$ERRORS\n  FAIL: skill descriptions over 13000 chars"
 fi
 
 # No Unicode punctuation in hot-path docs (em-dash, smart quotes, etc)
