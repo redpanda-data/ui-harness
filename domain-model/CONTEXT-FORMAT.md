@@ -10,37 +10,25 @@
 ## Language
 
 **Order**:
-A customer's request to purchase one or more items.
+{A one or two sentence description of the term}
 _Avoid_: Purchase, transaction
 
 **Invoice**:
 A request for payment sent to a customer after delivery.
 _Avoid_: Bill, payment request
 
-## Relationships
-
-- An **Order** produces one or more **Invoices**
-- An **Invoice** belongs to exactly one **Customer**
-
-## Example Dialogue
-
-> **Dev:** "When a **Customer** places an **Order**, do we create the **Invoice** immediately?"
-> **Domain expert:** "No -- an **Invoice** is only generated once a **Fulfillment** is confirmed."
-
-## Flagged Ambiguities
-
-- "account" was used to mean both **Customer** and **User** -- resolved: distinct concepts.
+**Customer**:
+A person or organization that places orders.
+_Avoid_: Client, buyer, account
 ```
 
 ## Rules
 
 - **Opinionated.** Multiple words for same concept -> pick best one, list others as _Avoid_.
 - **Flag conflicts.** Ambiguous term -> "Flagged Ambiguities" with clear resolution.
-- **Tight definitions.** One sentence max. Define what it IS, not what it does.
-- **Show relationships.** Bold term names, express cardinality where obvious.
-- **Project-specific terms only.** No general programming concepts (timeouts, error types).
+- **Tight definitions.** One or two sentences max. Define what it IS, not what it does.
+- **Project-specific terms only.** No general programming concepts (timeouts, error types, utility patterns). Before adding a term, ask: is this unique to this context, or general programming? Only the former belongs.
 - **Group naturally.** Subheadings when clusters emerge. Flat list if single area.
-- **Example dialogue.** Dev + domain expert conversation showing terms interact naturally.
 
 ## Single vs Multi-Context
 

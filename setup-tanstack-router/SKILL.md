@@ -18,8 +18,59 @@ paths:
 - Ban `URLSearchParams` -- suggest nuqs
 - Warn exported components from route files (break code splitting)
 - Require `validateSearch` when `useSearch` in route files
+- Warn when Query-primed loaders are consumed via `useLoaderData` instead of `useQuery`/`useSuspenseQuery`
+- Warn when router uses `queryClient` context without `defaultPreloadStaleTime: 0`
+- Warn when router uses `queryClient` context without `createRootRouteWithContext`
 
 Auto-regen route tree on route file change.
+
+## TanStack Router + Query
+
+When a route needs server data, prefer this ownership split:
+
+- **Router loader**: start fetching early after navigation intent.
+- **TanStack Query**: own cache, refetch, invalidation, and garbage collection.
+- **Component**: read via `useQuery()` or `useSuspenseQuery()` so Query has an active observer.
+
+Do **not** enforce suspense globally. Choose per field/page:
+
+- `useSuspenseQuery()` for blocking, page-critical data that should use route pending/error boundaries.
+- `useQuery()` for deferred or secondary data with inline loading/empty/error states.
+
+```tsx
+export const Route = createFileRoute('/dashboards/$dashboardId')({
+  loader: ({ context, params }) => {
+    context.queryClient.prefetchQuery(dashboardQueryOptions(params.dashboardId))
+  },
+  component: Dashboard,
+})
+
+function Dashboard() {
+  const params = Route.useParams()
+  const dashboard = useSuspenseQuery(dashboardQueryOptions(params.dashboardId))
+  const widgetCount = useQuery(widgetCountQueryOptions(params.dashboardId))
+
+  return <DashboardView dashboard={dashboard.data} widgetCount={widgetCount.data} />
+}
+```
+
+Router setup when Query owns cache:
+
+```tsx
+const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  component: RootLayout,
+})
+
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+  defaultPreloadStaleTime: 0,
+  defaultPendingComponent: DefaultLoader,
+  defaultErrorComponent: DefaultError,
+})
+```
+
+Avoid `Route.useLoaderData()` for Query-loaded data. It bypasses Query observers, so focus refetch, invalidation refetch, and cache retention can behave surprisingly.
 
 ## Customization
 

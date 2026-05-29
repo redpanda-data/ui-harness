@@ -4,8 +4,6 @@
 
 Hooks enforce patterns real-time, skills guide workflow, orchestration layer ensure nothing ships without tests, accessibility, type safety, code review -- zero babysit.
 
-**Surface area:** 48 skills, 101 hook scripts, 97 Claude hook commands, 87 Codex hook commands, 9 agents, 5 routines.
-
 <p align="center">
   <img src="docs/screenshots/plugin-card.png" alt="Frontend Skills plugin card -- React/TypeScript skills, hooks, and agents for Claude Code and Codex" width="720">
 </p>
@@ -18,7 +16,7 @@ Run inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session
 /plugin marketplace add redpanda-data/ui-harness
 ```
 ```bash
-/plugin install frontend-skills@ui-harness
+/plugin install frontend-skills@skills
 ```
 ```bash
 /reload-plugins
@@ -46,7 +44,7 @@ Restart Claude Code session so hooks reload from new cache.
 **Verify:**
 
 ```bash
-bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"
+bash "$(ls -d ~/.claude/plugins/cache/skills/frontend-skills/*/ | tail -1)scripts/verify-install.sh"
 ```
 
 <details>
@@ -68,14 +66,14 @@ Track latest `main`:
 
 ```bash
 codex plugin marketplace add redpanda-data/ui-harness --ref main
-codex plugin marketplace upgrade ui-harness
+codex plugin marketplace upgrade skills
 ```
 
 Or pin a release:
 
 ```bash
 codex plugin marketplace add redpanda-data/ui-harness --ref v4.10.2
-codex plugin marketplace upgrade ui-harness
+codex plugin marketplace upgrade skills
 ```
 
 **General CLI forms**
@@ -102,8 +100,8 @@ codex plugin marketplace remove marketplace-name
 For this repo specifically:
 
 ```bash
-codex plugin marketplace upgrade ui-harness
-codex plugin marketplace remove ui-harness
+codex plugin marketplace upgrade skills
+codex plugin marketplace remove skills
 ```
 
 After adding or upgrading, restart Codex so the Plugins UI reloads metadata.
@@ -128,7 +126,7 @@ bunx skills@latest add redpanda-data/ui-harness/work-automation-kit --agent clau
 # Individual skills -- pick what you need:
 bunx skills@latest add redpanda-data/ui-harness/brainstorming --agent claude-code -y
 bunx skills@latest add redpanda-data/ui-harness/tdd --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/domain-model --agent claude-code -y
+bunx skills@latest add mattpocock/skills/grill-with-docs --agent claude-code -y
 bunx skills@latest add redpanda-data/ui-harness/grill-me --agent claude-code -y
 bunx skills@latest add redpanda-data/ui-harness/triage --agent claude-code -y
 bunx skills@latest add redpanda-data/ui-harness/diagnose --agent claude-code -y
@@ -186,7 +184,7 @@ graph TD
 
     Understand["1. Understand\nExplore codebase, clarify requirements"]
     Plan["2. Plan\nExact file paths, code, expected output"]
-    Grill["2b. Grill\nAuto /domain-model, stress-test plan\nUpdate CONTEXT.md + ADRs inline\n--- GATE: user confirms ---"]
+    Grill["2b. Grill\nAuto /grill-with-docs, stress-test plan\nUpdate CONTEXT.md + ADRs inline\n--- GATE: user confirms ---"]
     Implement["3. Implement -- TDD\nRED: failing test\nGREEN: minimal code\nREFACTOR: clean up"]
     Verify["4. Verify\nSelf-verify via browser tools"]
     Review["5. Review\nSecurity gate, code-reviewer agent, create PR"]
@@ -225,7 +223,7 @@ sequenceDiagram
     You-->>Claude: Pick approach (GATE)
     Claude->>Claude: Phase 2 -- Plan<br/>(files, code, expected output)
 
-    Note over Claude: Auto-invoke /domain-model
+    Note over Claude: Auto-invoke /grill-with-docs
     Claude->>Claude: Phase 2b -- Grill<br/>challenge plan, sharpen terms<br/>update CONTEXT.md + ADRs inline
     Claude-->>You: "Plan solid, proceed?"
     You-->>Claude: Confirm (GATE)
@@ -297,6 +295,7 @@ Read src/routes/settings.tsx first. Propose approach, wait for my approval.
 ```
 /development-lifecycle -- users report form submits twice on double-click.
 Reproduce, find root cause, fix with test.
+/visual-review -- review changed frontend UI before opening a PR.
 ```
 
 **Overnight batch (Sandcastle):**
@@ -351,7 +350,7 @@ Auto-detects current branch PR, triages, fixes, replies to threads.
   <img src="docs/screenshots/hook-fire.gif" alt="Hook fires in ~293ms, blocks unsafe cast, dev fixes with zod schema" width="720">
 </p>
 
-**2-minute highlight reel** -- skill wins extracted from real transcripts (ADP UI + ui-registry + ui-harness repo):
+**2-minute highlight reel** -- skill wins extracted from real transcripts (ADP UI + ui-registry + skills repo):
 
 <p align="center">
   <video src="docs/screenshots/highlights.mp4" controls width="900" muted playsinline>
@@ -364,7 +363,7 @@ Featured skill moments -- each from an actual session:
 - **`/development-lifecycle`** -- adp-ui-llm-provider-cards: 4 waves, 13 phases, shipped end-to-end. No scope creep.
 - **`/tdd`** -- applied to `codex/autoform-v2-foundation` refactor. RED -> GREEN -> REFACTOR across the full PR surface.
 - **`/simplify`** -- three iterative passes on MCP marketplace PR. Caught 15% redundant code reviewers missed.
-- **`/domain-model`** -- stress-tested plans, updated CONTEXT.md + ADRs inline. Institutional memory captured mid-design.
+- **`/grill-with-docs`** -- stress-tested plans, updated CONTEXT.md + ADRs inline. Institutional memory captured mid-design.
 - **Force-push to main blocked** -- hook redirected to feature branch + PR flow every time.
 - **Dogfooding** -- 12 skills + 60 hooks + 263 unit tests + 9 agent evals shipped using the harness itself.
 - **Skill auto-load on file match** -- `/tdd` on `*.test.ts`, `/tanstack-router` on `route.tsx`, `/connect-query` on `*_pb.ts`. Zero invocation needed.
@@ -482,7 +481,7 @@ The fastest way to believe it: reproduce the core claim in your terminal.
 **1. Install the plugin**
 ```bash
 /plugin marketplace add redpanda-data/ui-harness
-/plugin install frontend-skills@ui-harness
+/plugin install frontend-skills@skills
 /reload-plugins
 ```
 
@@ -565,7 +564,7 @@ No. Redpanda-specific rules live in a **separate** kit (`redpanda-frontend-kit`)
 <details>
 <summary><strong>How do I customize or remove a hook?</strong></summary>
 
-Every hook is a bash script in `.claude/hooks/` -- inspect, edit, delete. Plugin install places them in `~/.claude/plugins/cache/ui-harness/frontend-skills/<ver>/.claude/hooks/`. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
+Every hook is a bash script in `.claude/hooks/` -- inspect, edit, delete. Plugin install places them in `~/.claude/plugins/cache/skills/frontend-skills/<ver>/.claude/hooks/`. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
 </details>
 
 <details>
@@ -590,11 +589,13 @@ Only remember **one skill**: `/development-lifecycle` (or alias `/work`). Covers
 |---|---|
 | **`/development-lifecycle`** | Build features, fix bugs, any dev work. Guide understand -> plan -> **grill** -> TDD -> `/go` (verify -> ship). |
 | **`/work`** | Alias for `/development-lifecycle`. Same full lifecycle, shorter type. |
-| **`/go`** | Ship what built. Phases 4-6 only: verify -> self-review -> `/simplify` -> `/commit-push-pr` -> monitor CI -> `/resolve-pr-feedback`. Use when implementation + tests done. |
+| **`/go`** | Ship what built. Phases 4-6 only: verify -> self-review -> `/visual-review` for frontend diffs -> `/simplify` -> `/commit-push-pr` -> monitor CI -> `/resolve-pr-feedback`. Use when implementation + tests done. |
+| **`/visual-review`** | Browser-based frontend review before PRs: screenshots, UI states, a11y, console errors, mobile and cross-browser checks. |
 | **`/brainstorming`** | Not sure what approach yet. Explore 2-3 design options with trade-offs. |
 | **`/tdd`** | Write tests or want strict red-green-refactor enforcement. |
-| **`/domain-model`** | **Grill + document.** 3 reviewer hats (product/eng/design) in parallel + sharpen terminology + update CONTEXT.md + ADRs inline. Phase 2b default. |
-| **`/grill-me`** | **Grill, no docs.** 3 reviewer hats (product/eng/design) in parallel, fast. Skip when decision isn't worth writing down. Standalone alt to `/domain-model`. |
+| **`/grill-with-docs`** | **Grill + document.** Sharpen terminology + update CONTEXT.md + ADRs inline. Phase 2b default. |
+| **`/domain-model`** | Legacy local DDD grill. Prefer `/grill-with-docs`; kept for explicit legacy requests. |
+| **`/grill-me`** | **Grill, no docs.** 3 reviewer hats (product/eng/design) in parallel, fast. Skip when decision isn't worth writing down. Standalone alt to `/grill-with-docs`. |
 | **`/triage`** | Triage issues via state machine (GitHub via `gh` or Jira via `acli`). Grill sessions, agent briefs, out-of-scope KB. Bug-investigation mode produces a TDD fix plan and files the ticket. |
 | **`/diagnose`** | Hard bug or perf regression. Six-phase loop: build feedback loop -> reproduce -> hypothesise (3-5 ranked) -> instrument -> fix + regression test -> cleanup + post-mortem. |
 | **`/qa`** | Interactive QA session. Describe bugs conversationally, agent explore codebase in background, auto-file GitHub issues. |
@@ -603,6 +604,7 @@ Only remember **one skill**: `/development-lifecycle` (or alias `/work`). Covers
 | **`/request-refactor-plan`** | Plan refactor. Interview you, break into tiny safe commits, file RFC issue. |
 | **`/resolve-pr-feedback`** | Address PR reviews. Fetch unresolved threads, triage, fix, reply, resolve. Used by Phase 5b. |
 | **`/improve-codebase-architecture`** | Find architectural improvements. Identify shallow modules, propose deep-module refactors. |
+| **`/handoff`** | Compact current session into a temp handoff doc for another agent or fresh session. Use instead of dragging full transcript when context should move. |
 | **`/write-a-skill`** | Create new agent skill with proper structure + progressive disclosure. |
 
 <details>
@@ -626,9 +628,9 @@ Compare WebSocket, SSE, and CRDT approaches. Focus on latency and offline suppor
 and matching confirm password. Start with the failing tests.
 ```
 
-**`/domain-model`** -- DDD-light grill with inline doc updates:
+**`/grill-with-docs`** -- docs-first grill with inline doc updates:
 ```
-/domain-model -- stress-test the data fetching strategy for the new dashboard feature.
+/grill-with-docs -- stress-test the data fetching strategy for the new dashboard feature.
 We're planning to use TanStack Query with a 5-minute stale time.
 ```
 
@@ -688,6 +690,12 @@ into a standalone AuthService. Must be backwards-compatible during migration.
 in src/features/. Look for tightly coupled modules that should be split.
 ```
 
+
+**`/handoff`** -- transfer context to another session:
+```
+/handoff -- next session should prototype the URL-state approach without touching the main implementation branch.
+```
+
 **`/write-a-skill`** -- create new skill:
 ```
 /write-a-skill for enforcing our internal design system tokens.
@@ -743,7 +751,7 @@ New to AI-assisted dev? Start here.
 
 **Day 1 (30 min):**
 1. Install (see [Install](#install) above)
-2. Run `bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"` confirm all wired
+2. Run `bash "$(ls -d ~/.claude/plugins/cache/skills/frontend-skills/*/ | tail -1)scripts/verify-install.sh"` confirm all wired
 3. Pick real ticket from backlog -- not toy problem
 
 **First prompt:**
@@ -984,7 +992,7 @@ graph TD
     subgraph Workflow["Workflow Skills"]
         DL["development-lifecycle"]
         TDD[tdd]
-        DM[domain-model]
+        DM[grill-with-docs]
         GM[grill-me]
         DAI[design-an-interface]
         TR[triage]
@@ -1205,7 +1213,7 @@ bunx skills@latest add mattpocock/skills/to-issues --agent claude-code -y       
 bunx skills@latest add mattpocock/skills/git-guardrails-claude-code --agent claude-code -y  # Branch protection
 ```
 
-**Already vendored** (no need install from mattpocock/skills): `tdd`, `triage` (multi-tracker GH+Jira), `diagnose`, `improve-codebase-architecture`, `request-refactor-plan`, `design-an-interface`, `write-a-skill`, `grill-me`, `domain-model`, `qa`, `zoom-out`, `ubiquitous-language`. Our versions incorporate Pocock's best patterns plus hook enforcement, lifecycle integration, DDD-light documentation, accessibility-first testing.
+**Already vendored** (no need install from mattpocock/skills): `tdd`, `triage`, `diagnose`, `handoff`, `improve-codebase-architecture`, `grill-with-docs`, `prototype`, `to-prd`, `to-issues`, `caveman`, `edit-article`, `obsidian-vault`, `write-a-skill`, `grill-me`, `zoom-out`. Deprecated but kept: `domain-model`, `qa`, `request-refactor-plan`, `design-an-interface`, `ubiquitous-language`.
 
 **Note:** `setup-pre-commit` (husky/lint-staged) intentionally omitted. Claude Code hooks already enforce linting, formatting, type checking deterministically every edit -- pre-commit hooks redundant + add friction for human devs who may prefer different workflows.
 

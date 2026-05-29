@@ -61,6 +61,17 @@ _run_bs() {
   _last_exit=$exit_code
   rm -f "$stderr_file"
 }
+_run_bs_in_repo() {
+  local repo="$1"
+  local input="$2"
+  local stderr_file
+  stderr_file=$(mktemp)
+  local exit_code=0
+  (cd "$repo" && echo "$input" | bash "$HOOKS/branch-safety-check.sh" 2>"$stderr_file" > /dev/null) || exit_code=$?
+  _last_stderr=$(cat "$stderr_file")
+  _last_exit=$exit_code
+  rm -f "$stderr_file"
+}
 _assert_bs() {
   local desc="$1" expected="$2" pattern="${3:-}"
   local ok=true
@@ -75,24 +86,28 @@ _assert_bs() {
   fi
 }
 
-# Current branch in the ui-harness repo
-_actual_branch=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo "main")
+# Branch-safety must be tested in a normal branched repo. The skills repo may
+# be checked out as detached HEAD in Codex worktrees, and the hook intentionally
+# no-ops there.
+_bs_repo=$(mktemp -d)
+git -C "$_bs_repo" init -q
+git -C "$_bs_repo" checkout -q -b eval-current
 
 # Same branch → pass (exit 0)
-_setup_bs "$_actual_branch"
-_run_bs '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
+_setup_bs "eval-current"
+_run_bs_in_repo "$_bs_repo" '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
 _assert_bs "branch-safety: same branch passes" 0
 _teardown_bs
 
 # Drift → deny (exit 2)
 _setup_bs "feat/definitely-not-current-$RANDOM"
-_run_bs '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
+_run_bs_in_repo "$_bs_repo" '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
 _assert_bs "branch-safety: drift denies" 2 "Refusing this git call"
 _teardown_bs
 
 # Rebind env → pass (exit 0) and update bound-branch
 _setup_bs "feat/drift-$RANDOM"
-CLAUDE_BRANCH_REBIND=1 _run_bs '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
+CLAUDE_BRANCH_REBIND=1 _run_bs_in_repo "$_bs_repo" '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
 _assert_bs "branch-safety: rebind env passes" 0 "rebound"
 unset CLAUDE_BRANCH_REBIND
 _teardown_bs
@@ -116,3 +131,4 @@ _run_bs '{"tool_name":"Bash","tool_input":{"command":"git commit -m foo"}}'
 _assert_bs "branch-safety: unbound session passes" 0
 find /tmp -maxdepth 1 -name "hook-session-eval-bs-unbound-*" -exec rm -rf {} + 2>/dev/null || true
 unset CLAUDE_SESSION_ID
+rm -rf "$_bs_repo"

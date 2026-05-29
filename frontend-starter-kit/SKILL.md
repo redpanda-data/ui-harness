@@ -33,26 +33,29 @@ Each skill `SETUP.md` has install steps. Set `REACT_RULES_BAN_USEEFFECT=1` in se
 
 ### 2. Install workflow skills
 ```bash
-bunx skills@latest add redpanda-data/ui-harness/development-lifecycle --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/tdd --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/brainstorming --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/setup-ci-pipeline --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/improve-codebase-architecture --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/request-refactor-plan --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/design-an-interface --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/domain-model --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/grill-me --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/triage --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/diagnose --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/qa --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/zoom-out --agent claude-code -y
-bunx skills@latest add redpanda-data/ui-harness/write-a-skill --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/development-lifecycle --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/tdd --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/brainstorming --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/setup-ci-pipeline --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/improve-codebase-architecture --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/request-refactor-plan --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/design-an-interface --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/domain-model --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/grill-me --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/triage --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/diagnose --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/qa --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/zoom-out --agent claude-code -y
+bunx skills@latest add malinskibeniamin/skills/write-a-skill --agent claude-code -y
 ```
 
 ### 3. Community skills (optional)
 ```bash
+bunx skills@latest add mattpocock/skills/grill-with-docs --agent claude-code -y
+bunx skills@latest add mattpocock/skills/prototype --agent claude-code -y
 bunx skills@latest add mattpocock/skills/to-prd --agent claude-code -y
 bunx skills@latest add mattpocock/skills/to-issues --agent claude-code -y
+bunx skills@latest add mattpocock/skills/handoff --agent claude-code -y
 bunx skills@latest add mattpocock/skills/ubiquitous-language --agent claude-code -y
 bunx skills@latest add mattpocock/skills/git-guardrails-claude-code --agent claude-code -y
 ```

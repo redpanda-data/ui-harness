@@ -28,7 +28,7 @@ Claude invoke silent when phase 1 start on default branch. User never run.
 
 - Every step: exact file paths, exact code, expected output. No placeholders.
 - Bite-sized tasks (2-5 min each)
-- UI work: spawn 2-3 parallel prototype agents, review with user, pick best. See [REFERENCE.md](REFERENCE.md).
+- UI work: use `/prototype` for 2-3 runnable UI variations, review with user, pick best. See [REFERENCE.md](REFERENCE.md).
 - 5+ tasks -> stacked PRs (one per logical group)
 - Complex plan (5+ tasks, multi-stakeholder)? Consider `/ultraplan`
 - `/codex:rescue` available -> auto-dispatch second opinion
@@ -37,7 +37,7 @@ Claude invoke silent when phase 1 start on default branch. User never run.
 
 **GATE: no impl until plan survive grilling.**
 
-- Auto-invoke `/domain-model` | grill until every branch resolved | update CONTEXT.md + ADRs inline
+- Auto-invoke `/grill-with-docs` | grill until every branch resolved | update CONTEXT.md + ADRs inline
 - Update plan with changes | get explicit user confirmation
 - Skip only if: trivial bug fix AND <3 tasks AND no architectural decisions
 

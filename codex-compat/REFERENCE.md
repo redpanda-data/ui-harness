@@ -187,3 +187,26 @@ Self-review loop enforcement that depends on subagent hooks should become soft g
 ## AGENTS.md
 
 Generated at repo root: [`AGENTS.md`](../AGENTS.md). Enforced rules as soft guidance for Codex. Customize per installed skills.
+
+## Recent Claude Code hook and skill enhancements
+
+Use these as **Claude-only progressive enhancement** on top of the portable command-hook core. Do not make Codex correctness depend on them.
+
+| Claude Code feature | Compatibility stance | How to use safely |
+| --- | --- | --- |
+| `exec-form` command hooks with `args` | Claude enhanced, Codex shim | Prefer `command` plus `args` in `.claude/settings.json` to avoid shell quoting bugs. Keep `.codex/hooks.json` as command shims until Codex supports the same args shape. |
+| `PostToolUse.continueOnBlock` | Claude enhanced, Codex shim/fallback | Enable on Claude `PostToolUse` checks so violations can be fed back and fixed in the same turn. Codex keeps normal direct hooks or Stop fallback. |
+| `updatedToolOutput` | Claude enhanced, script-level portable | Hook scripts may emit compact rewritten output for Claude. Keep the underlying allow/block decision independent of this field. |
+| `skillOverrides` | Claude-only progressive enhancement | Use `user-invocable-only`/`name-only`/`off` to reduce accidental proactive skill triggering. Codex uses AGENTS.md guidance and ignores this setting. |
+| `claude_code.skill_activated` telemetry | Claude-only progressive enhancement | Track `invocation_trigger` (`user-slash`, `claude-proactive`, `nested-skill`) to evaluate skill trigger quality. Do not require this event for Codex. |
+| `CLAUDE_EFFORT` / `effort.level` hook input | Claude enhanced, script-level portable | Let scripts choose stricter messages or checks at high effort. Default to safe behavior when the variable is absent under Codex. |
+
+### Eval policy
+
+Compatibility evals should assert:
+
+- `.claude/settings.json` uses exec-form `args` for new Claude hook entries.
+- `.codex/hooks.json` keeps command shims and does not rely on Claude-only `args`.
+- Claude-only enhancements are documented as progressive enhancement.
+- Every new hook shape is classified as `direct`, `direct with shim`, `fallback only`, `unsupported`, or `Claude-only progressive enhancement`.
+- Hook scripts still produce the same allow/block result from Claude-shaped and Codex-shaped payloads whenever the event is in the portable subset.

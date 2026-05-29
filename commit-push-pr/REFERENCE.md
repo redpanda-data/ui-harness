@@ -5,11 +5,14 @@
 Before `/commit-push-pr`, one review skill must run in session:
 
 - `/simplify` -- small fixes/tweaks
-- `/request-refactor-plan` -- refactors
+- `/improve-codebase-architecture` -- refactors (prefer this; `/request-refactor-plan` is deprecated)
 - `/improve-codebase-architecture` -- cleanup (oversized files, shallow modules, tangled deps)
-- `/design-an-interface` -- redesign module or layout
+- `/prototype` -- redesign module or layout (prefer this; `/design-an-interface` is deprecated)
+- `/visual-review` -- browser-based review for frontend/visual diffs
 
-None ran -> warn: "Lifecycle requires review skill before shipping. Recommend: `/simplify` for small changes, `/request-refactor-plan` for refactors, `/improve-codebase-architecture` for cleanup."
+Frontend diff -> `/visual-review` must run or an explicit skip reason must be recorded, even if another review skill already ran.
+
+None ran -> warn: "Lifecycle requires review skill before shipping. Recommend: `/simplify` for small changes, `/improve-codebase-architecture` for cleanup, `/visual-review` for frontend changes."
 
 ## Conventional commit types (Phase 3)
 
@@ -83,12 +86,14 @@ Append `--label <label1> --label <label2>` per verified label.
 - `src/components/`, `src/routes/`, `src/pages/`, `src/app/`
 - registry UI (`components/ui/`)
 
-Frontend detected -> **always** include Screenshots table. Omit section entirely otherwise (no empty table, no "N/A" row).
+Frontend detected -> **require `/visual-review` result or explicit skip reason**, then include Screenshots table. Follow `visual-review/REFERENCE.md` PR evidence contract. Omit section entirely otherwise (no empty table, no "N/A" row).
 
 **Capture before/after:**
 
-- `/qa` already ran this session -> reuse captured refs/screenshots
-- Else: `scripts/skills-browser.sh screenshot --out /tmp/pr-<view>-after.png` per affected view
+- `/visual-review` already ran this session -> reuse its checked views, screenshots, findings, and skip reasons
+- `/triage` already ran this session -> reuse captured refs/screenshots (`/qa` is deprecated)
+- Else: run `/visual-review`; if user explicitly skips, record reason in PR body
+- Fallback: `scripts/skills-browser.sh screenshot --out /tmp/pr-<view>-after.png` per affected view
 - Before image: prior PR screenshot, main-branch capture, or `<!-- no prior state -->` for new views
 - Upload via `gh pr comment` drag-paste URL, or reference `/tmp/*.png` path if asset host unavailable -- note blocker in PR body
 

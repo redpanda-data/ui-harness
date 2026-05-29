@@ -83,7 +83,7 @@ Show counts + one-line summary per issue. Let maintainer pick.
 
 3. **Reproduce (bugs only).** Before grill, attempt repro: read reporter steps, trace code, run tests or commands. Report what happened -- successful repro with code path, failed repro, or insufficient detail (strong `needs-info` signal). Confirmed repro make much stronger agent brief. For root-cause investigation + TDD fix plan, see [REFERENCE.md#tdd-fix-plan-mode](./REFERENCE.md).
 
-4. **Grill (if needed).** Issue need flesh out -> run `/grill-me` (or `/domain-model` when domain language sharpening also useful).
+4. **Grill (if needed).** Issue need flesh out -> run `/grill-me` for a fast grill or `/grill-with-docs` when domain language/ADRs matter.
 
 5. **Apply the outcome:**
    - `ready-for-agent` -> post agent brief comment ([AGENT-BRIEF.md](./AGENT-BRIEF.md))

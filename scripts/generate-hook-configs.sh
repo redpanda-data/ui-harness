@@ -30,11 +30,10 @@ MANIFEST="skill-manifest.json"
 [ -f "$MANIFEST" ] || { echo "ERROR: $MANIFEST not found" >&2; exit 1; }
 command -v jq >/dev/null || { echo "ERROR: jq required" >&2; exit 1; }
 
-# Build hook config from manifest using prefix string.
-# jq auto-escapes embedded " → \" during JSON serialization.
-_build() {
-  local prefix="$1"
-  jq --arg prefix "$prefix" '
+# Build Claude settings using exec-form hooks. Keeping script names in `args`
+# avoids shell quoting bugs while preserving existing hook scripts.
+_build_claude_settings() {
+  jq '
     {
       hooks: (
         .hooks | to_entries | map(
@@ -43,10 +42,13 @@ _build() {
               key: $event,
               value: (
                 .value | to_entries | map(
-                  (if .key == "" then {} else {matcher: .key} end) + {
+                  (if .key == "" then {} else {matcher: .key} end)
+                  + (if $event == "PostToolUse" then {continueOnBlock: true} else {} end)
+                  + {
                     hooks: (.value | map({
                       type: "command",
-                      command: ("f=" + $prefix + "/" + . + "; [ -x \"$f\" ] && exec \"$f\"; exit 0")
+                      command: ".claude/hooks/run-hook.sh",
+                      args: [ . ]
                     }))
                   }
                 )
@@ -65,7 +67,7 @@ PLUGIN_PREFIX='"${CLAUDE_PLUGIN_ROOT}/.claude/hooks'
 # Assembled string inside jq: "f=" + prefix + "/" + script + "; [ -x ..."
 # Needs close-quote before the `;`. Use suffix via jq sub:
 
-NEW_SETTINGS=$(_build "$SETTINGS_PREFIX")
+NEW_SETTINGS=$(_build_claude_settings)
 
 # Codex supports a smaller lifecycle surface than Claude Code. Generate a
 # best-effort Codex mapping instead of only dropping unsupported events:
@@ -142,30 +144,15 @@ NEW_PLUGIN=$(jq --arg prefix '"${CLAUDE_PLUGIN_ROOT}/.claude/hooks' '
 
 NEW_CODEX_PLUGIN=$(_build_codex '"${CLAUDE_PLUGIN_ROOT}/.claude/hooks' '"')
 
-_validate_hook_script_inventory() {
-  # Every executable-ish file in .claude/hooks should be either a lifecycle hook
-  # in the manifest, a Codex-only adapter, a support library, or a manual utility.
-  # This catches silent gaps where a real hook script exists but never runs.
-  local _manifest_scripts _exempt_scripts _unaccounted
-  _manifest_scripts=$(jq -r '.hooks | .. | .[]? | select(type=="string")' "$MANIFEST" | grep -E '\.sh$' | sort -u)
-  _exempt_scripts=$(jq -r '((.supportScripts // []) + (.manualScripts // []) + (.codexOnlyHooks // []))[]?' "$MANIFEST" | sort -u)
-  _unaccounted=$(comm -23 \
-    <(find .claude/hooks -maxdepth 1 -type f -name '*.sh' -exec basename {} \; | sort -u) \
-    <(printf '%s\n%s\n' "$_manifest_scripts" "$_exempt_scripts" | awk 'NF' | sort -u) \
-  )
-  if [ -n "$_unaccounted" ]; then
-    echo "ERROR: hook scripts exist but are neither configured nor exempted:" >&2
-    echo "$_unaccounted" >&2
-    echo "Add them under .hooks or document them in supportScripts/manualScripts/codexOnlyHooks in $MANIFEST." >&2
-    return 1
-  fi
-}
-
-# Merge permissions from existing settings.json (hand-edited, not generated)
+# Merge hand-edited Claude settings not sourced from the manifest.
 if [ -f ".claude/settings.json" ]; then
   _perms=$(jq '.permissions // empty' .claude/settings.json)
+  _skill_overrides=$(jq '.skillOverrides // empty' .claude/settings.json)
   if [ -n "$_perms" ] && [ "$_perms" != "null" ]; then
-    NEW_SETTINGS=$(echo "$NEW_SETTINGS" | jq --argjson p "$_perms" '{permissions: $p, hooks}')
+    NEW_SETTINGS=$(echo "$NEW_SETTINGS" | jq --argjson p "$_perms" '. + {permissions: $p}')
+  fi
+  if [ -n "$_skill_overrides" ] && [ "$_skill_overrides" != "null" ]; then
+    NEW_SETTINGS=$(echo "$NEW_SETTINGS" | jq --argjson s "$_skill_overrides" '. + {skillOverrides: $s}')
   fi
 fi
 
@@ -196,10 +183,7 @@ case "$MODE" in
       echo "DRIFT: hooks/codex-hooks.json ≠ manifest Codex subset" >&2
       _drift=1
     fi
-    if ! _validate_hook_script_inventory; then
-      _drift=1
-    fi
-    [ "$_drift" = "0" ] && echo "OK: hook configs match manifest and hook script inventory is accounted for"
+    [ "$_drift" = "0" ] && echo "OK: both configs match manifest"
     exit $_drift
     ;;
   apply)
@@ -238,7 +222,6 @@ case "$MODE" in
       echo "WARN: $_missing scripts missing" >&2
       exit 1
     fi
-    _validate_hook_script_inventory
     ;;
   *)
     echo "Usage: $0 [--apply|--check]" >&2

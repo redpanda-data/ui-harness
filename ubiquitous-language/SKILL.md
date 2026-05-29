@@ -1,7 +1,9 @@
 ---
 name: ubiquitous-language
-description: Extract a DDD-style ubiquitous language glossary from the current conversation, flagging ambiguities and proposing canonical terms. Saves to UBIQUITOUS_LANGUAGE.md. Use when user wants to define domain terms, build a glossary, harden terminology, create a ubiquitous language, or mentions "domain model" or "DDD".
+description: "DEPRECATED. Prefer `/grill-with-docs` for domain language plus CONTEXT.md/ADR updates. Do not use unless user explicitly says `/ubiquitous-language`."
 ---
+
+> Deprecated: prefer replacement named in description. Keep only for backward compatibility.
 
 # Ubiquitous Language
 

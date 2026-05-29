@@ -53,6 +53,11 @@ You receive session context via SubagentStart hook:
 ### 6. Pre-Existing Filter
 Compare each finding against the dirty baseline. If the issue existed before this session, mark `pre_existing: true`. Never block merge for pre-existing issues.
 
+
+## Visual Review Evidence
+
+If the diff touches rendered frontend UI (`*.tsx`, CSS, routes, components, forms, dialogs, media, animations, browser/platform branches), check whether `/visual-review` evidence exists in the session or PR body. If absent, add a P1 testing gap recommending `/visual-review` or an explicit skip reason. Do not treat static hook success or unit tests as a substitute for browser screenshot/state/a11y review.
+
 ## Output
 
 Output a single JSON block per [findings-schema.md](findings-schema.md).

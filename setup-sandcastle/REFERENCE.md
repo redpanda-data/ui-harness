@@ -40,8 +40,8 @@ const results = await Promise.all(
       hooks: {
         onSandboxReady: [
           { command: "bun install --frozen-lockfile" },
-          { command: "bunx skills@latest add redpanda-data/ui-harness/frontend-starter-kit --agent claude-code -y" },
-          { command: "bunx skills@latest add redpanda-data/ui-harness/development-lifecycle --agent claude-code -y" },
+          { command: "bunx skills@latest add malinskibeniamin/skills/frontend-starter-kit --agent claude-code -y" },
+          { command: "bunx skills@latest add malinskibeniamin/skills/development-lifecycle --agent claude-code -y" },
         ],
       },
       maxIterations: 3,
@@ -98,7 +98,7 @@ const implResult = await run({
   hooks: {
     onSandboxReady: [
       { command: "bun install --frozen-lockfile" },
-      { command: "bunx skills@latest add redpanda-data/ui-harness/frontend-starter-kit --agent claude-code -y" },
+      { command: "bunx skills@latest add malinskibeniamin/skills/frontend-starter-kit --agent claude-code -y" },
     ],
   },
   maxIterations: 3,
@@ -235,7 +235,7 @@ When done, emit: <promise>COMPLETE</promise>
 ```typescript
 // .sandcastle/dogfood.ts
 const issues = JSON.parse(
-  execSync('gh issue list --repo redpanda-data/ui-harness --state open --json number,title,body').toString()
+  execSync('gh issue list --repo malinskibeniamin/skills --state open --json number,title,body').toString()
 );
 
 await Promise.all(

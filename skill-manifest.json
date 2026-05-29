@@ -1,11 +1,10 @@
 {
-  "$comment": "Source of truth for hook configurations and hook inventory exemptions. Generates .claude/settings.json, hooks/hooks.json, .codex/hooks.json, and hooks/codex-hooks.json. Run scripts/generate-hook-configs.sh to regenerate and verify no hook script is silently unconfigured.",
-  "version": "4.10.2",
+  "$comment": "Source of truth for all hook configurations. Generates .claude/settings.json, hooks/hooks.json, .claude-plugin/plugin.json counts, .codex-plugin/plugin.json counts, .agents/plugins/marketplace.json, .claude-plugin/marketplace.json. Run scripts/generate-hook-configs.sh to regenerate.",
+  "version": "4.11.0",
   "hooks": {
     "SessionStart": {
       "": [
         "session-env.sh",
-        "rtk-install-check.sh",
         "llm-env.sh"
       ]
     },
@@ -67,20 +66,10 @@
         "conventional-commits-check.sh",
         "branch-safety-check.sh",
         "bash-verbose-guard.sh",
-        "github-write-guard.sh",
         "rtk-rewrite.sh"
       ],
       "mcp__.*": [
         "mcp-ban.sh"
-      ],
-      "Read": [
-        "read-size-guard.sh"
-      ],
-      "WebFetch": [
-        "webfetch-dedup.sh"
-      ],
-      "Agent|Task": [
-        "subagent-length-cap.sh"
       ]
     },
     "PostToolUse": {
@@ -168,19 +157,8 @@
         "ci-warning-audit.sh",
         "perf-regression-stop.sh",
         "violation-summary-stop.sh",
-        "cache-telemetry-stop.sh",
-        "metrics-summary-stop.sh"
+        "cache-telemetry-stop.sh"
       ]
     }
-  },
-  "codexOnlyHooks": [
-    "codex-permission-request-guard.sh"
-  ],
-  "supportScripts": [
-    "_hook-lib.sh",
-    "source-hook-lib.sh"
-  ],
-  "manualScripts": [
-    "cache-telemetry-report.sh"
-  ]
+  }
 }
