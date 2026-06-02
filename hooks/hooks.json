@@ -122,6 +122,10 @@
           {
             "type": "command",
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-end.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          },
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/metrics-summary-stop.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
       }

@@ -164,6 +164,13 @@
             "args": [
               "session-end.sh"
             ]
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "metrics-summary-stop.sh"
+            ]
           }
         ]
       }

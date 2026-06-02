@@ -53,7 +53,8 @@
     },
     "SessionEnd": {
       "": [
-        "session-end.sh"
+        "session-end.sh",
+        "metrics-summary-stop.sh"
       ]
     },
     "PreToolUse": {
