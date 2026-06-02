@@ -57,7 +57,7 @@ done
 
 # Fallback: legacy marketplace/plugin-cache install (pick latest version).
 if [ -z "$PLUGIN_ROOT" ]; then
-  for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/ "$HOME/.claude/plugins/cache/skills/frontend-skills"/*/; do
+  for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/; do
     if [ -f "${dir}hooks/hooks.json" ]; then
       PLUGIN_ROOT="$dir"
       INSTALL_MODE="plugin"
