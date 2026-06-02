@@ -10,7 +10,7 @@
       "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks, 101 scripts, 66 skills (includes /diagnose feedback-loop-first 6-phase debugger, /triage multi-tracker (gh + acli) state machine, green-not-done warnings gate via `test-warning-check` + `ci-warning-audit`, /steelman anti-sycophancy guard, /snyk-ux-security with JS+Go tracks, exploitability-triage first gate, top-level-first upgrade ladder, `govulncheck`), 9 agents, 5 routines. 21 LLM failure modes (7 Karpathy single-agent + 14 MAST multi-agent, Cemri et al. NeurIPS 2025). OWASP+STRIDE, Core Web Vitals gate, bun/yarn lockfile parity, MCP ban with CLI redirect, worktree isolation, agent-browser integration. Opus 4.7 tuned. POSIX-friendly.",
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "./plugins/frontend-skills"
       },
       "policy": {
         "installation": "AVAILABLE",

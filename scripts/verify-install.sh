@@ -44,7 +44,7 @@ PLUGIN_ROOT=""
 INSTALL_MODE="manual"
 
 # Check if installed as a plugin (pick latest version, not first)
-for dir in "$HOME/.claude/plugins/cache/skills/frontend-skills"/*/; do
+for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/; do
   if [ -f "${dir}hooks/hooks.json" ]; then
     PLUGIN_ROOT="$dir"
     INSTALL_MODE="plugin"
