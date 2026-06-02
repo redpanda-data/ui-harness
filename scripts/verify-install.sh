@@ -37,21 +37,36 @@ $JSON_MODE || echo "=== Skills & Hooks Installation Verification ==="
 $JSON_MODE || echo ""
 
 # ── Detect installation mode ────────────────────────────────────
-# Plugin install: hooks live in plugin cache, wired via hooks.json
+# skills-dir plugin (Claude Code >=2.1.157): repo lives under ~/.claude/skills/
+# Plugin cache install (legacy marketplace): hooks live in plugin cache
 # Manual install: hooks copied to consumer .claude/hooks/
 
 PLUGIN_ROOT=""
 INSTALL_MODE="manual"
+INSTALL_SOURCE="manual"
 
-# Check if installed as a plugin (pick latest version, not first)
-for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/; do
-  if [ -f "${dir}hooks/hooks.json" ]; then
-    PLUGIN_ROOT="$dir"
+# Prefer the new skills-directory plugin path. Claude Code loads any folder
+# under ~/.claude/skills/ that has .claude-plugin/plugin.json, no marketplace.
+for dir in "$HOME/.claude/skills/frontend-skills" "$HOME/.claude/skills/ui-harness"; do
+  if [ -f "${dir}/.claude-plugin/plugin.json" ] && [ -f "${dir}/hooks/hooks.json" ]; then
+    PLUGIN_ROOT="${dir%/}/"
     INSTALL_MODE="plugin"
+    INSTALL_SOURCE="skills-dir-plugin"
   fi
 done
 
-$JSON_MODE || echo "--- Install Mode: $INSTALL_MODE ---"
+# Fallback: legacy marketplace/plugin-cache install (pick latest version).
+if [ -z "$PLUGIN_ROOT" ]; then
+  for dir in "$HOME/.claude/plugins/cache/ui-harness/frontend-skills"/*/ "$HOME/.claude/plugins/cache/skills/frontend-skills"/*/; do
+    if [ -f "${dir}hooks/hooks.json" ]; then
+      PLUGIN_ROOT="$dir"
+      INSTALL_MODE="plugin"
+      INSTALL_SOURCE="plugin-cache"
+    fi
+  done
+fi
+
+$JSON_MODE || echo "--- Install Mode: $INSTALL_SOURCE ---"
 
 # ── 1. Version info ───────────────────────────────────────────
 
@@ -250,8 +265,8 @@ fi
 $JSON_MODE || echo ""
 $JSON_MODE || echo "--- Hook Wiring ---"
 
-# All 8 hook events used by the harness
-HOOK_EVENTS=("SessionStart" "PostCompact" "UserPromptSubmit" "PreToolUse" "PostToolUse" "SubagentStart" "SubagentStop" "Stop")
+# All Claude hook events used by the harness.
+HOOK_EVENTS=("SessionStart" "UserPromptSubmit" "PostCompact" "PreCompact" "PostToolUseFailure" "FileChanged" "WorktreeCreate" "SessionEnd" "PreToolUse" "PostToolUse" "SubagentStart" "SubagentStop" "Stop")
 
 if [ "$INSTALL_MODE" = "plugin" ]; then
   # Plugin mode: check hooks/hooks.json
@@ -455,17 +470,21 @@ if [ -n "$REMOTE" ]; then
   $JSON_MODE || echo ""
   $JSON_MODE || echo "--- Version Check (remote: $REMOTE) ---"
 
-  # Check if any hook is a symlink pointing to a skills repo
   skills_repo=""
-  for hook in ".claude/hooks/react-rules-check.sh" ".claude/hooks/enforce-toolchain.sh"; do
-    if [ -L "$hook" ]; then
-      target=$(readlink "$hook" 2>/dev/null || true)
-      if echo "$target" | grep -q "skills"; then
-        skills_repo=$(echo "$target" | sed 's|/setup-.*||;s|/shared/.*||')
-        break
+  if [ "$INSTALL_SOURCE" = "skills-dir-plugin" ] && [ -d "${PLUGIN_ROOT%/}/.git" ]; then
+    skills_repo="${PLUGIN_ROOT%/}"
+  else
+    # Manual installs may symlink hook scripts back to a skills repo.
+    for hook in ".claude/hooks/react-rules-check.sh" ".claude/hooks/enforce-toolchain.sh"; do
+      if [ -L "$hook" ]; then
+        target=$(readlink "$hook" 2>/dev/null || true)
+        if echo "$target" | grep -q "skills"; then
+          skills_repo=$(echo "$target" | sed 's|/setup-.*||;s|/shared/.*||')
+          break
+        fi
       fi
-    fi
-  done
+    done
+  fi
 
   if [ -n "$skills_repo" ] && [ -d "$skills_repo/.git" ]; then
     local_hash=$(cd "$skills_repo" && git rev-parse HEAD 2>/dev/null || echo "unknown")
