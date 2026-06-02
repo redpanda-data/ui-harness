@@ -16,7 +16,7 @@ Run inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session
 /plugin marketplace add redpanda-data/ui-harness
 ```
 ```bash
-/plugin install frontend-skills@skills
+/plugin install frontend-skills@ui-harness
 ```
 ```bash
 /reload-plugins
@@ -44,7 +44,7 @@ Restart Claude Code session so hooks reload from new cache.
 **Verify:**
 
 ```bash
-bash "$(ls -d ~/.claude/plugins/cache/skills/frontend-skills/*/ | tail -1)scripts/verify-install.sh"
+bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"
 ```
 
 <details>
@@ -66,14 +66,16 @@ Track latest `main`:
 
 ```bash
 codex plugin marketplace add redpanda-data/ui-harness --ref main
-codex plugin marketplace upgrade skills
+codex plugin marketplace upgrade ui-harness
+codex plugin add frontend-skills@ui-harness
 ```
 
 Or pin a release:
 
 ```bash
 codex plugin marketplace add redpanda-data/ui-harness --ref v4.10.2
-codex plugin marketplace upgrade skills
+codex plugin marketplace upgrade ui-harness
+codex plugin add frontend-skills@ui-harness
 ```
 
 **General CLI forms**
@@ -87,7 +89,7 @@ codex plugin marketplace add ./local-marketplace-root
 
 Marketplace sources can be GitHub shorthand (`owner/repo` or `owner/repo@ref`), HTTP or HTTPS Git URLs, SSH Git URLs, or local marketplace root directories. Use `--ref` to pin a Git ref, and repeat `--sparse PATH` to use a sparse checkout for Git-backed marketplace repos. `--sparse` is valid only for Git marketplace sources.
 
-Do not use `--sparse .agents/plugins` for this repo as-is: the marketplace entry points `frontend-skills` at the repo root (`./`), so Codex needs the root plugin files too.
+Do not use `--sparse .agents/plugins` for this repo as-is: the marketplace entry points `frontend-skills` through `./plugins/frontend-skills`, a symlink back to the repo root, so Codex needs the root plugin files too.
 
 **Refresh or remove configured marketplaces**
 
@@ -100,8 +102,8 @@ codex plugin marketplace remove marketplace-name
 For this repo specifically:
 
 ```bash
-codex plugin marketplace upgrade skills
-codex plugin marketplace remove skills
+codex plugin marketplace upgrade ui-harness
+codex plugin marketplace remove ui-harness
 ```
 
 After adding or upgrading, restart Codex so the Plugins UI reloads metadata.
@@ -481,7 +483,7 @@ The fastest way to believe it: reproduce the core claim in your terminal.
 **1. Install the plugin**
 ```bash
 /plugin marketplace add redpanda-data/ui-harness
-/plugin install frontend-skills@skills
+/plugin install frontend-skills@ui-harness
 /reload-plugins
 ```
 
@@ -564,7 +566,7 @@ No. Redpanda-specific rules live in a **separate** kit (`redpanda-frontend-kit`)
 <details>
 <summary><strong>How do I customize or remove a hook?</strong></summary>
 
-Every hook is a bash script in `.claude/hooks/` -- inspect, edit, delete. Plugin install places them in `~/.claude/plugins/cache/skills/frontend-skills/<ver>/.claude/hooks/`. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
+Every hook is a bash script in `.claude/hooks/` -- inspect, edit, delete. Plugin install places them in `~/.claude/plugins/cache/ui-harness/frontend-skills/<ver>/.claude/hooks/`. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
 </details>
 
 <details>
@@ -751,7 +753,7 @@ New to AI-assisted dev? Start here.
 
 **Day 1 (30 min):**
 1. Install (see [Install](#install) above)
-2. Run `bash "$(ls -d ~/.claude/plugins/cache/skills/frontend-skills/*/ | tail -1)scripts/verify-install.sh"` confirm all wired
+2. Run `bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"` confirm all wired
 3. Pick real ticket from backlog -- not toy problem
 
 **First prompt:**
