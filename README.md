@@ -51,6 +51,7 @@ Restart Claude Code session or run `/reload-plugins` so hooks reload.
 **Verify:**
 
 ```bash
+claude plugin list | grep 'frontend-skills.*skills-dir'
 bash ~/.claude/skills/frontend-skills/scripts/verify-install.sh
 ```
 

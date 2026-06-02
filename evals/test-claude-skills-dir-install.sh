@@ -26,6 +26,8 @@ run_content_eval "$REPO_ROOT/README.md" 'Still a plugin' \
   "README clarifies plugin manifest still needed for hooks and agents"
 run_content_eval "$REPO_ROOT/README.md" 'Legacy: marketplace install' \
   "README keeps legacy marketplace fallback discoverable"
+run_content_eval "$REPO_ROOT/README.md" 'claude plugin list' \
+  "README verify step checks Claude sees skills-dir plugin"
 
 tmp_home=$(mktemp -d)
 mkdir -p "$tmp_home/.claude/skills"
