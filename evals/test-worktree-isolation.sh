@@ -56,7 +56,10 @@ _run_bs() {
   local stderr_file
   stderr_file=$(mktemp)
   local exit_code=0
-  echo "$1" | bash "$HOOKS/branch-safety-check.sh" 2>"$stderr_file" > /dev/null || exit_code=$?
+  (
+    cd "${_BS_REPO:-$REPO_ROOT}"
+    echo "$1" | bash "$HOOKS/branch-safety-check.sh"
+  ) 2>"$stderr_file" > /dev/null || exit_code=$?
   _last_stderr=$(cat "$stderr_file")
   _last_exit=$exit_code
   rm -f "$stderr_file"
