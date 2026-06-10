@@ -10,19 +10,26 @@ Hooks enforce patterns real-time, skills guide workflow, orchestration layer ens
 
 ## Install
 
-Run inside [Claude Code](https://docs.anthropic.com/en/docs/claude-code) session (start with `claude` in terminal):
+Claude Code 2.1.157+ auto-loads plugins from `~/.claude/skills/`. No marketplace needed.
+
+Still a plugin: `.claude-plugin/plugin.json` is what lets the harness bundle hooks, agents, and skills together. We just keep it in the skills directory instead of installing from a marketplace.
 
 ```bash
-/plugin marketplace add redpanda-data/ui-harness
+mkdir -p ~/.claude/skills
+git clone https://github.com/redpanda-data/ui-harness ~/.claude/skills/frontend-skills
 ```
+
+Start or restart [Claude Code](https://docs.anthropic.com/en/docs/claude-code) from any project:
+
 ```bash
-/plugin install frontend-skills@ui-harness
+claude
 ```
+
+Skills, hooks, agents activate automatically. If Claude Code was already running:
+
 ```bash
 /reload-plugins
 ```
-
-Three commands. Skills, hooks, agents activate immediately. Done.
 
 **Recommended: rtk** (output-compression proxy, ~60-90% token savings on git/cargo/test/gh):
 
@@ -36,16 +43,36 @@ Harness fail-open -- skip safe; SessionStart nudge remind if miss.
 **Update** (pull latest):
 
 ```bash
-/plugin install frontend-skills --force
+git -C ~/.claude/skills/frontend-skills pull --ff-only
 ```
 
-Restart Claude Code session so hooks reload from new cache.
+Restart Claude Code session or run `/reload-plugins` so hooks reload.
 
 **Verify:**
 
 ```bash
-bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"
+claude plugin list | grep 'frontend-skills.*skills-dir'
+bash ~/.claude/skills/frontend-skills/scripts/verify-install.sh
 ```
+
+<details>
+<summary>Legacy: marketplace install (Claude Code <=2.1.156)</summary>
+
+Use this only if skills-directory plugins are not available.
+
+```bash
+/plugin marketplace add redpanda-data/ui-harness
+/plugin install frontend-skills@ui-harness
+/reload-plugins
+```
+
+Update legacy marketplace install:
+
+```bash
+/plugin install frontend-skills --force
+```
+
+</details>
 
 <details>
 <summary>Codex (OpenAI) -- install as Codex plugin</summary>
@@ -73,7 +100,7 @@ codex plugin add frontend-skills@ui-harness
 Or pin a release:
 
 ```bash
-codex plugin marketplace add redpanda-data/ui-harness --ref v4.10.2
+codex plugin marketplace add redpanda-data/ui-harness --ref v4.11.1
 codex plugin marketplace upgrade ui-harness
 codex plugin add frontend-skills@ui-harness
 ```
@@ -415,7 +442,7 @@ Featured skill moments -- each from an actual session:
 | Cross-session learning | No | Manual edit | No | No | **Yes (Phase 6 Compound -> `.claude/rules/`)** |
 | Opinionated stack | N/A | N/A | Agnostic | Varies | **React + TanStack + ConnectRPC + Bun** |
 | Config surface | 0 | Low | Low | Medium | **Medium (14 setup skills, env vars)** |
-| Setup cost | 0 | ~30 min prompt writing | One `/install` | Varies | **3 commands** |
+| Setup cost | 0 | ~30 min prompt writing | One `/install` | Varies | **One clone into `~/.claude/skills/`** |
 
 **TL;DR:** If your stack matches (React + Bun/TypeScript + modern patterns), the deterministic enforcement is worth the opinionation. If not, fork the hook scripts and keep the lifecycle skills.
 
@@ -480,11 +507,11 @@ The fastest way to believe it: reproduce the core claim in your terminal.
 
 **Prereq:** Claude Code installed, fresh repo.
 
-**1. Install the plugin**
+**1. Install the plugin from your skills directory**
 ```bash
-/plugin marketplace add redpanda-data/ui-harness
-/plugin install frontend-skills@ui-harness
-/reload-plugins
+mkdir -p ~/.claude/skills
+git clone https://github.com/redpanda-data/ui-harness ~/.claude/skills/frontend-skills
+claude
 ```
 
 **2. Ask Claude to write a banned pattern**
@@ -566,7 +593,7 @@ No. Redpanda-specific rules live in a **separate** kit (`redpanda-frontend-kit`)
 <details>
 <summary><strong>How do I customize or remove a hook?</strong></summary>
 
-Every hook is a bash script in `.claude/hooks/` -- inspect, edit, delete. Plugin install places them in `~/.claude/plugins/cache/ui-harness/frontend-skills/<ver>/.claude/hooks/`. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
+Every hook is a bash script in `~/.claude/skills/frontend-skills/.claude/hooks/` -- inspect, edit, delete. Override per-project by copying to `<project>/.claude/hooks/` (takes precedence). Env vars control most behavior: `HOOK_VERBOSITY=terse`, `REACT_RULES_BAN_USEEFFECT=1`, `ORCHESTRATION_STRICT=0`, etc. See [Configuration](#configuration).
 </details>
 
 <details>
@@ -753,7 +780,7 @@ New to AI-assisted dev? Start here.
 
 **Day 1 (30 min):**
 1. Install (see [Install](#install) above)
-2. Run `bash "$(ls -d ~/.claude/plugins/cache/ui-harness/frontend-skills/*/ | tail -1)scripts/verify-install.sh"` confirm all wired
+2. Run `bash ~/.claude/skills/frontend-skills/scripts/verify-install.sh` confirm all wired
 3. Pick real ticket from backlog -- not toy problem
 
 **First prompt:**

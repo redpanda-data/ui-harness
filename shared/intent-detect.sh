@@ -104,17 +104,18 @@ if [ -n "$_pr_number" ]; then
 fi
 
 # ── Scope-lock: prefer committing to current feature branch ─────
-# Auto-detected from branch state, not prompt keywords.
+# Add only when some workflow directive already fired. Pure questions should
+# stay silent even on feature branches.
 
-_current_branch=$(git branch --show-current 2>/dev/null || true)
-case "$_current_branch" in
-  main|master|develop|"") ;;
-  *)
-    if [ -n "$directives" ]; then
+if [ -n "$directives" ]; then
+  _current_branch=$(git branch --show-current 2>/dev/null || true)
+  case "$_current_branch" in
+    main|master|develop|"") ;;
+    *)
       directives="$directives\n[SCOPE-LOCK] On feature branch '$_current_branch'. Prefer committing here. Ask before creating new branches or PRs unless explicitly instructed."
-    fi
-    ;;
-esac
+      ;;
+  esac
+fi
 
 # ── Risk tier (informs auto mode confidence) ────────────────────
 # low: tests, components, refactoring — fully guarded by hooks

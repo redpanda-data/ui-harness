@@ -1,6 +1,6 @@
 ---
 name: adversarial-reviewer
-description: Constructs failure scenarios and stress-tests implementations. Asks "what breaks this?" not "does this look right?" Gated: runs only when diff_lines > 200 OR any prior reviewer returned a CRITICAL finding OR diff touches auth/security paths. Outputs structured JSON findings per findings-schema.md.
+description: 'Constructs failure scenarios and stress-tests implementations. Asks "what breaks this?" not "does this look right?" Gated: runs only when diff_lines > 200 OR any prior reviewer returned a CRITICAL finding OR diff touches auth/security paths. Outputs structured JSON findings per findings-schema.md.'
 model: opus
 allowed-tools: Read, Grep, Glob, Bash(git diff *), Bash(git log *)
 ---
