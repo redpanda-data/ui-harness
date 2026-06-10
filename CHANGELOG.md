@@ -1,5 +1,9 @@
 # Changelog
 
+## 4.11.1
+
+2026-06-10 -- Simplify Claude Code v2.1.157+ installation: primary Claude install now clones the repo into `~/.claude/skills/frontend-skills` and verifies `frontend-skills@skills-dir` through `claude plugin list`, with marketplace install retained as a legacy fallback. `verify-install.sh` detects skills-directory plugins, drops stale cache namespace fallback, and keeps clean-HOME smoke coverage. Moves metrics summary to `SessionEnd`, fixes adversarial reviewer frontmatter validation, and hardens branch-safety and scope-lock evals for detached worktrees and pure questions. Full eval suite: 2200/2200.
+
 ## 4.11.0
 
 2026-05-26 -- Add `/visual-review` skill for browser-based frontend QA before PRs. The workflow runs standalone and is wired into `/go`, `/commit-push`, `/commit-push-pr`, self-reviewer, and code-reviewer for frontend diffs, requiring visual review evidence or an explicit skip reason. Ships platform/environment fingerprinting (browser, user agent, platform, viewport, visualViewport, DPR, media preferences, locale/direction), a platform risk map, Web Weekly-informed visual/a11y/perf checks, and 79 eval assertions. Skills 65 -> 66. Full visual-review eval suite: 79/79.

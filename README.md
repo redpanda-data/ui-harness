@@ -100,7 +100,7 @@ codex plugin add frontend-skills@ui-harness
 Or pin a release:
 
 ```bash
-codex plugin marketplace add redpanda-data/ui-harness --ref v4.10.2
+codex plugin marketplace add redpanda-data/ui-harness --ref v4.11.1
 codex plugin marketplace upgrade ui-harness
 codex plugin add frontend-skills@ui-harness
 ```

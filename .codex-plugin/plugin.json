@@ -1,6 +1,6 @@
 {
   "name": "frontend-skills",
-  "version": "4.11.0",
+  "version": "4.11.1",
   "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks (101 scripts) enforce patterns on every edit. Green != done: `test-warning-check` (local Bash PostToolUse) + `ci-warning-audit` (Stop, scans `gh run view --log`) block passing tests with DeprecationWarning / React `act()` / unhandled rejection / `@ts-ignore` noise. 66 skills from TDD through CI-green PR, including /diagnose feedback-loop-first 6-phase debugger + /triage multi-tracker (gh + acli) state machine + /steelman anti-sycophancy guard + /snyk-ux-security JS+Go per-path vuln sweep (exploitability-triage first gate, top-level-first upgrade ladder, React 18 pin, `govulncheck` for Go). 21 LLM failure modes (7 Karpathy single-agent + 14 MAST multi-agent, Cemri et al. NeurIPS 2025), OWASP + STRIDE, Core Web Vitals gate, bun.lock + yarn.lock parity, worktree isolation + branch safety, MCP ban with CLI redirect (~20x savings), agent-browser integration (~91% token reduction). 9 agents (3 plan-review hats + karpathy reference), 5 routines. Single-source manifest codegen. Opus 4.7 tuned. POSIX-friendly.",
   "author": {
     "name": "Redpanda Data",
@@ -44,7 +44,7 @@
       "Review this PR and fix all findings"
     ]
   },
-  "x-updatedAt": "2026-05-26",
+  "x-updatedAt": "2026-06-10",
   "x-includes": {
     "instructions": [
       "CLAUDE.md",
@@ -53,6 +53,7 @@
     "settings": "settings.json"
   },
   "x-changelog": {
+    "4.11.1": "2026-06-10 -- Simplify Claude Code v2.1.157+ installation: primary Claude install now clones the repo into `~/.claude/skills/frontend-skills` and verifies `frontend-skills@skills-dir` through `claude plugin list`, with marketplace install retained as a legacy fallback. `verify-install.sh` detects skills-directory plugins, drops stale cache namespace fallback, and keeps clean-HOME smoke coverage. Moves metrics summary to `SessionEnd`, fixes adversarial reviewer frontmatter validation, and hardens branch-safety and scope-lock evals for detached worktrees and pure questions. Full eval suite: 2200/2200.",
     "4.11.0": "2026-05-26 -- Add `/visual-review` skill for browser-based frontend QA before PRs. The workflow runs standalone and is wired into `/go`, `/commit-push`, `/commit-push-pr`, self-reviewer, and code-reviewer for frontend diffs, requiring visual review evidence or an explicit skip reason. Ships platform/environment fingerprinting (browser, user agent, platform, viewport, visualViewport, DPR, media preferences, locale/direction), a platform risk map, Web Weekly-informed visual/a11y/perf checks, and 79 eval assertions. Skills 65 -> 66.",
     "4.10.6": "2026-05-25 -- Codex marketplace install fix: expose root plugin through root plugin path so Codex marketplace source path is a plugin directory while retaining root-relative plugin packaging.",
     "4.10.5": "2026-05-25 -- Vendor remaining mattpocock/skills into repo, caveman-compress new skill docs, add vendoring evals, and fix detached-HEAD branch-safety eval coverage.",
