@@ -605,6 +605,12 @@ Only remember **one skill**: `/development-lifecycle` (or alias `/work`). Covers
 | **`/design-an-interface`** | Design API or module. Spawn 3+ agents generate radically different designs. |
 | **`/request-refactor-plan`** | Plan refactor. Interview you, break into tiny safe commits, file RFC issue. |
 | **`/resolve-pr-feedback`** | Address PR reviews. Fetch unresolved threads, triage, fix, reply, resolve. Used by Phase 5b. |
+| **`/review`** | Review a diff since a fixed point (branch, commit, `main`, or PR). Eight parallel hats (ponytail, thermo-nuclear, resilience, Standards + Spec, adversarial, visual, test/perf, security/privacy), merged + deduped, with a PR value gate. Auto-posts P0-P3 inline PR comments; comment-ready fallback otherwise. |
+| **`/thermo-nuclear-code-quality-review`** | Release-blocking cold audit across quality, frontend, resilience, visual, security, tests, perf, and steelman. Use for high-stakes PRs. |
+| **`/resilience-review`** | Stress-test edge cases, errors, fallback, async/data, state, and polish. Use when robustness matters. |
+| **`/ponytail-review`** | Review a diff for over-engineering only: what to delete, inline, shrink, or replace with stdlib/native. |
+| **`/deslop`** | Question changed code as liability and remove unjustified surface area. Run before commit, push, PR, or merge. |
+| **`/swarm`** | Parallel executor: fan out independent work across subagents. |
 | **`/improve-codebase-architecture`** | Find architectural improvements. Identify shallow modules, propose deep-module refactors. |
 | **`/handoff`** | Compact current session into a temp handoff doc for another agent or fresh session. Use instead of dragging full transcript when context should move. |
 | **`/write-a-skill`** | Create new agent skill with proper structure + progressive disclosure. |

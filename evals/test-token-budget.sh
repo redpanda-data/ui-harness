@@ -38,6 +38,11 @@ else
 fi
 
 # Sum SKILL.md description field chars (frontmatter description only)
+# Cap bumped 13000 -> 14000 (2026-06-26) for the upgraded 8-hat /review skill
+# plus its 5 dependency skills (deslop, ponytail-review, resilience-review,
+# swarm, thermo-nuclear-code-quality-review). These descriptions are routing
+# triggers and ported verbatim from the fork; the bump leaves ~700 chars of
+# headroom while keeping the silent-bloat regression guard in place.
 desc_total=0
 for skill in "$BUDGET_DIR"/*/SKILL.md; do
   [ -f "$skill" ] || continue
@@ -45,11 +50,11 @@ for skill in "$BUDGET_DIR"/*/SKILL.md; do
   desc_total=$((desc_total + ${#d}))
 done
 
-if [ "$desc_total" -lt 13000 ]; then
-  echo "  PASS  All SKILL.md descriptions total under 13000 chars ($desc_total)"
+if [ "$desc_total" -lt 14000 ]; then
+  echo "  PASS  All SKILL.md descriptions total under 14000 chars ($desc_total)"
   PASS=$((PASS + 1))
 else
-  echo "  FAIL  SKILL.md descriptions total: $desc_total chars (cap: 13000)"
+  echo "  FAIL  SKILL.md descriptions total: $desc_total chars (cap: 14000)"
   FAIL=$((FAIL + 1))
   ERRORS="$ERRORS\n  FAIL: skill descriptions over 13000 chars"
 fi
