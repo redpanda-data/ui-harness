@@ -1,7 +1,7 @@
 {
   "name": "frontend-skills",
-  "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks across 101 scripts enforce patterns on every edit. Green != done: `test-warning-check` surfaces warnings on passing test/lint/type runs (DeprecationWarning, React `act()`, unhandled rejection, `@ts-ignore`); `ci-warning-audit` Stop-hook scans `gh run view --log` on green CI for deprecations / console warnings / skipped tests. 66 skills from TDD through CI-green PR, including /steelman anti-sycophancy guard + /snyk-ux-security per-path vuln sweep (JS + Go ecosystems; exploitability-triage first gate via `bun why`/`go mod why`/`govulncheck`; top-level direct dep bump first, parent dep bump second, resolutions/overrides/replace as last resort only with follow-up TODO to remove; React 18 pin + changelog-walked major bumps + no-deferral escalation; Go `snyk test --file=go.mod` + `go get -u` + `go mod tidy` + `govulncheck` verify). Session exit blocked while PR review threads remain unresolved. TypeScript escape hatches blocked at Edit. tsconfig strictness weakening blocked. Worktree isolation + branch safety hook-enforced. bun.lock + yarn.lock parity enforced (Snyk IO doesn't parse bun.lock). 21 LLM failure modes enforced: 7 Karpathy single-agent + 14 MAST multi-agent (Cemri et al. NeurIPS 2025). OWASP + STRIDE subset + snyk/bun audit. Core Web Vitals perf gate. MCP ban with CLI redirect (~20x token savings). Agent-browser wrap (~91% token reduction for AI browsing). 3-hat plan review (product/engineering/design). 9 agents (adds plan hats + karpathy reference), 5 routines. Opus 4.7 tuned, POSIX-friendly.",
-  "version": "4.11.0",
+  "description": "React/TypeScript frontend + Go backend enforcement harness. 92 wired hooks across 101 scripts enforce patterns on every edit. Green != done: `test-warning-check` surfaces warnings on passing test/lint/type runs (DeprecationWarning, React `act()`, unhandled rejection, `@ts-ignore`); `ci-warning-audit` Stop-hook scans `gh run view --log` on green CI for deprecations / console warnings / skipped tests. 71 skills from TDD through CI-green PR, including /steelman anti-sycophancy guard + /snyk-ux-security per-path vuln sweep (JS + Go ecosystems; exploitability-triage first gate via `bun why`/`go mod why`/`govulncheck`; top-level direct dep bump first, parent dep bump second, resolutions/overrides/replace as last resort only with follow-up TODO to remove; React 18 pin + changelog-walked major bumps + no-deferral escalation; Go `snyk test --file=go.mod` + `go get -u` + `go mod tidy` + `govulncheck` verify). Session exit blocked while PR review threads remain unresolved. TypeScript escape hatches blocked at Edit. tsconfig strictness weakening blocked. Worktree isolation + branch safety hook-enforced. bun.lock + yarn.lock parity enforced (Snyk IO doesn't parse bun.lock). 21 LLM failure modes enforced: 7 Karpathy single-agent + 14 MAST multi-agent (Cemri et al. NeurIPS 2025). OWASP + STRIDE subset + snyk/bun audit. Core Web Vitals perf gate. MCP ban with CLI redirect (~20x token savings). Agent-browser wrap (~91% token reduction for AI browsing). 3-hat plan review (product/engineering/design). 9 agents (adds plan hats + karpathy reference), 5 routines. Opus 4.7 tuned, POSIX-friendly.",
+  "version": "4.12.0",
   "author": {
     "name": "Redpanda Data"
   },
@@ -31,6 +31,7 @@
     "./commit-push-pr/",
     "./commit-push/",
     "./design-an-interface/",
+    "./deslop/",
     "./development-lifecycle/",
     "./diagnose/",
     "./domain-model/",
@@ -47,9 +48,11 @@
     "./improve-codebase-architecture/",
     "./migrate-to-shoehorn/",
     "./obsidian-vault/",
+    "./ponytail-review/",
     "./prototype/",
     "./redpanda-frontend-kit/",
     "./request-refactor-plan/",
+    "./resilience-review/",
     "./resolve-pr-feedback/",
     "./review/",
     "./scaffold-exercises/",
@@ -76,7 +79,9 @@
     "./setup-zustand/",
     "./snyk-ux-security/",
     "./steelman/",
+    "./swarm/",
     "./tdd/",
+    "./thermo-nuclear-code-quality-review/",
     "./to-issues/",
     "./to-prd/",
     "./triage/",
@@ -100,7 +105,7 @@
     "./agents/self-reviewer.md",
     "./agents/verifier.md"
   ],
-  "x-updatedAt": "2026-05-26",
+  "x-updatedAt": "2026-06-26",
   "x-includes": {
     "instructions": [
       "CLAUDE.md",
@@ -110,6 +115,7 @@
     "manifestSource": "skill-manifest.json"
   },
   "x-changelog": {
+    "4.12.0": "2026-06-26 -- Upstream the 8-hat `/review` skill and its dependency skills from the personal fork (`malinskibeniamin/skills`). Replaces the prior 21-line `/review` stub with the full diff-review-from-a-fixed-point workflow: 8 parallel review hats (ponytail, thermo-nuclear, resilience, regular Standards+Spec, adversarial, visual, test-perf, security-privacy-triage) spawned via general-purpose subagents or `/swarm`, merged + deduped by root cause, a PR value gate with a `/steelman` fallback, and auto-posted P0-P3 inline PR comments with a comment-ready fallback. Adds the five skills `/review` invokes that were missing from ui-harness: `/deslop`, `/ponytail-review`, `/resilience-review`, `/thermo-nuclear-code-quality-review`, `/swarm` (`/visual-review`, `/steelman`, `/grill-me` were already present). New evals: test-review (26 checks), test-thermo-nuclear-code-quality-review, test-swarm -- auto-discovered by evals/run.sh (deslop and resilience-review ship without evals here -- their fork evals assert harness-wide integration that is out of scope). Registered the five new skill dirs in plugin.json. Skills 66 -> 71.",
     "4.11.0": "2026-05-26 -- Add `/visual-review` skill for browser-based frontend QA before PRs. The workflow runs standalone and is wired into `/go`, `/commit-push`, `/commit-push-pr`, self-reviewer, and code-reviewer for frontend diffs, requiring visual review evidence or an explicit skip reason. Ships platform/environment fingerprinting (browser, user agent, platform, viewport, visualViewport, DPR, media preferences, locale/direction), a platform risk map, Web Weekly-informed visual/a11y/perf checks, and 79 eval assertions. Skills 65 -> 66.",
     "4.10.6": "2026-05-25 -- Codex marketplace install fix: expose root plugin through root plugin path so Codex marketplace source path is a plugin directory while retaining root-relative plugin packaging.",
     "4.10.5": "2026-05-25 -- Vendor remaining mattpocock/skills into repo, caveman-compress new skill docs, add vendoring evals, and fix detached-HEAD branch-safety eval coverage.",
