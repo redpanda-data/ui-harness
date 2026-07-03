@@ -164,15 +164,6 @@
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/rtk-rewrite.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/mcp-ban.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
       }
     ],
     "PostToolUse": [

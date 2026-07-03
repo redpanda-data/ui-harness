@@ -14,9 +14,6 @@ case "$tool_name" in
   Bash)
     candidates="enforce-toolchain.sh conventional-commits-check.sh branch-safety-check.sh"
     ;;
-  mcp__*)
-    candidates="mcp-ban.sh"
-    ;;
   *)
     exit 0
     ;;

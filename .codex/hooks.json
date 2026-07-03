@@ -66,15 +66,6 @@
             "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/rtk-rewrite.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mcp-ban.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -378,7 +369,7 @@
     ],
     "PermissionRequest": [
       {
-        "matcher": "Bash|mcp__.*",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",

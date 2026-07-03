@@ -12,10 +12,6 @@ bun tsgo biome vitest | Compiler memoize | fix type (guard, generic) | `@/compon
 
 `find` -> `-maxdepth N` or `| head` | `git log` -> `-n 30` or `--oneline` | `grep -r` -> Grep tool | `cat` >200 line -> Read | `llm-truncate` cap 4KB | `bash-verbose-guard` nudge pre-exec | `rtk-rewrite` auto-prefix git/cargo/test/gh/tsc w/ `rtk` (60-90% cut) -- get: `brew install rtk` -- filter: `.rtk/filters.toml`
 
-## External Services (MCP banned -> CLI)
-
-Jira `acli` | Gmail `gws` (no format:full) | Browser `agent-browser` | CI `gh` (Blacksmith run show in GH Actions) | Calendar/Drive `gws` | Buildkite `bk` | Box `box` | M365 `m365`. `mcp-ban.sh` deny + show syntax. MCP 10-25k char, CLI 100-500.
-
 ## Commits
 
 `type(scope): description` -- feat fix refactor style test docs chore perf ci build revert -- scope need -- lowercase, 5-72 char

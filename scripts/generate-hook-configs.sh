@@ -106,10 +106,10 @@ _build_codex() {
         .hooks.PostToolUse = ((.hooks.PostToolUse // []) + groups_for("PostToolUseFailure"))
       else . end
     # Codex-only event: run an adapter during approval prompts so approval-time
-    # Bash/MCP requests still get the same hard-deny guardrails.
+    # Bash requests still get the same hard-deny guardrails.
     | .hooks.PermissionRequest = [
         {
-          matcher: "Bash|mcp__.*",
+          matcher: "Bash",
           hooks: [command_hook("codex-permission-request-guard.sh")]
         }
       ]
