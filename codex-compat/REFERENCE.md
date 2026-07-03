@@ -77,15 +77,6 @@ Generate from `.claude/settings.json`. Copy supported events directly. Add the b
             "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/conventional-commits-check.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "f=$(git rev-parse --show-toplevel 2>/dev/null)/.claude/hooks/mcp-ban.sh; [ -x \"$f\" ] && exec \"$f\"; exit 0"
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -132,7 +123,7 @@ Generate from `.claude/settings.json`. Copy supported events directly. Add the b
     ],
     "PermissionRequest": [
       {
-        "matcher": "Bash|mcp__.*|Edit\\|Write",
+        "matcher": "Bash|Edit\\|Write",
         "hooks": [
           {
             "type": "command",

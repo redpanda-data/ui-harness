@@ -1392,7 +1392,7 @@ Typical Claude Code tool call takes 3-8 seconds (network + LLM inference). PostT
 
 ## Codex Compatibility
 
-Codex = first-class harness. Supported equivalent hooks are mapped directly: SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, plus Codex-only PermissionRequest through an adapter that reuses hard-deny Bash/MCP guardrails. Claude PostToolUseFailure maps to Codex PostToolUse because Codex post-tool hooks include failed Bash commands. Claude-only events without Codex equivalents (FileChanged, compact hooks, SessionEnd, Subagent hooks, WorktreeCreate) stay Claude-only until Codex adds matching lifecycle events. `AGENTS.md` at repo root replaces PostCompact context re-injection.
+Codex = first-class harness. Supported equivalent hooks are mapped directly: SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop, plus Codex-only PermissionRequest through an adapter that reuses hard-deny Bash guardrails. Claude PostToolUseFailure maps to Codex PostToolUse because Codex post-tool hooks include failed Bash commands. Claude-only events without Codex equivalents (FileChanged, compact hooks, SessionEnd, Subagent hooks, WorktreeCreate) stay Claude-only until Codex adds matching lifecycle events. `AGENTS.md` at repo root replaces PostCompact context re-injection.
 
 All hook paths use `$(git rev-parse --show-toplevel)` for resolution -- works from any CWD, silently skip in repos without hooks installed.
 
@@ -1422,13 +1422,6 @@ export default defineConfig({
 ```
 
 Both reporters follow same pattern: minimal-signal (not silent) on pass to defeat silent-glob-typo bugs, structured JSON on fail capped to prevent runaway output. Typical savings vs default reporters: 10-100x on stdout, which Claude reads back as tokens.
-
-### Disabling browser MCPs
-
-Figma + Chrome MCP servers = claude.ai account-level connectors, not project config. To disable (recommended for token savings if prefer subagent-browser patterns):
-
-1. `/mcp` inside Claude Code to list currently connected servers
-2. https://claude.ai/settings/connectors -- disconnect `Figma` + `Chrome Browser` if want free ~4KB of system-prompt instructions they consume per turn
 
 ## Further Reading
 
