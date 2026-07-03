@@ -67,9 +67,6 @@
         "branch-safety-check.sh",
         "bash-verbose-guard.sh",
         "rtk-rewrite.sh"
-      ],
-      "mcp__.*": [
-        "mcp-ban.sh"
       ]
     },
     "PostToolUse": {

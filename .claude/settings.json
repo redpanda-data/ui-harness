@@ -227,18 +227,6 @@
             ]
           }
         ]
-      },
-      {
-        "matcher": "mcp__.*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/hooks/run-hook.sh",
-            "args": [
-              "mcp-ban.sh"
-            ]
-          }
-        ]
       }
     ],
     "PostToolUse": [
