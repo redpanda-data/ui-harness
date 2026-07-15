@@ -3,6 +3,7 @@
 
 SKILL_DIR="$REPO_ROOT/snyk-ux-security"
 SKILL_MD="$SKILL_DIR/SKILL.md"
+REFERENCE_MD="$SKILL_DIR/REFERENCE.md"
 PEER_CHECK="$SKILL_DIR/scripts/react-peer-check.sh"
 LOCK_HOOK="$REPO_ROOT/.claude/hooks/lockfile-sync-check.sh"
 MANIFEST="$REPO_ROOT/skill-manifest.json"
@@ -27,7 +28,7 @@ fi
 
 run_content_eval "$SKILL_MD" "^name: snyk-ux-security" "SKILL.md has correct name"
 run_content_eval "$SKILL_MD" "^description:" "SKILL.md has description"
-run_content_eval "$SKILL_MD" "Use when" "SKILL.md description has trigger phrase"
+run_content_eval "$SKILL_MD" "^disable-model-invocation: true$" "SKILL.md requires explicit invocation"
 
 # Description must NOT hardcode specific repo names (generic skill, paths via args)
 desc=$(awk '/^description:/{print; exit}' "$SKILL_MD")
@@ -66,6 +67,12 @@ run_content_eval "$SKILL_MD" "bun\.lock" "SKILL.md references bun.lock"
 run_content_eval "$SKILL_MD" "Snyk IO.*yarn\.lock|yarn\.lock.*Snyk" "SKILL.md explains Snyk IO needs yarn.lock"
 run_content_eval "$SKILL_MD" "[Dd]ual.lockfile|both lockfiles" "SKILL.md enforces dual-lockfile sync"
 run_content_eval "$SKILL_MD" "lockfile-sync-check" "SKILL.md references lockfile-sync-check hook"
+run_content_eval "$SKILL_MD" "package-lock\.json" "SKILL.md calls out package-lock.json"
+run_content_eval "$SKILL_MD" 'Do not create, update, or commit|No `package-lock\.json` by default' "SKILL.md avoids package-lock churn"
+run_content_eval "$REFERENCE_MD" "JS package manager stance" "REFERENCE.md documents JS package-manager stance"
+run_content_eval "$REFERENCE_MD" 'Do not run `npm audit`|Do not.*npm audit' "REFERENCE.md forbids npm audit"
+run_content_eval "$REFERENCE_MD" "package-lock\.json.*stale|stale/wrong.*package-lock\.json" "REFERENCE.md treats package-lock as stale in bun projects"
+run_content_eval "$REFERENCE_MD" "Evidence gate for npm transitives" "REFERENCE.md requires evidence before dismissing npm transitives"
 
 # Guardrail: bun-only for runtime (no npm/yarn/pnpm commands except `bun install --yarn`)
 if grep -qE "^\s*(npm (install|update|audit|view|why)|yarn (add|upgrade|audit|why)|pnpm (add|update|audit|why))" "$SKILL_MD"; then
@@ -133,6 +140,66 @@ run_content_eval "$SKILL_MD" "subagent" "SKILL.md spawns subagent per path"
 # ── Security hygiene ────────────────────────────────────────────
 
 run_content_eval "$SKILL_MD" "[Nn]ever (execute|run) code from advisories|[Nn]ever.*token" "SKILL.md has security notes"
+
+# ── Dismissal hardening: transitive-only findings ────────────────
+
+run_content_eval "$SKILL_MD" "direct dep absence.*dismiss|not add.*package\\.json" "SKILL.md warns not to add direct deps just to suppress transitives"
+run_content_eval "$SKILL_MD" "/steelman" "SKILL.md explicitly invokes /steelman for transitive-only bump decisions"
+run_content_eval "$SKILL_MD" "/diagnose" "SKILL.md invokes the available /diagnose skill before package.json security fixes"
+run_content_eval "$SKILL_MD" "package\\.json admission gate|admission gate.*package\\.json" "SKILL.md has package.json admission gate"
+run_content_eval "$SKILL_MD" "uncertain.*escalate|escalate.*uncertain" "SKILL.md escalates uncertain transitive findings"
+run_content_eval "$SKILL_MD" "bump.*makes no sense|makes no sense.*bump" "SKILL.md blocks nonsensical transitive bumps"
+run_content_eval "$SKILL_MD" "Override list growth is a smell|override list.*smell" "SKILL.md treats override-list growth as smell"
+run_content_eval "$SKILL_MD" "Remove dependency surface|dependency surface third|native/in-house" "SKILL.md prefers dependency-surface removal before overrides"
+run_content_eval "$REFERENCE_MD" "Transitive-only dismissal checklist" "REFERENCE.md has transitive-only dismissal checklist"
+run_content_eval "$REFERENCE_MD" "Direct dependency absence is evidence" "REFERENCE.md treats missing direct dep as dismissal evidence"
+run_content_eval "$REFERENCE_MD" "do not add.*package\\.json" "REFERENCE.md forbids package.json growth for suppression-only overrides"
+run_content_eval "$REFERENCE_MD" "/steelman transitive bump gate|transitive bump gate.*\\/steelman" "REFERENCE.md documents the /steelman transitive bump gate"
+run_content_eval "$REFERENCE_MD" "strongest case.*dismiss|dismiss.*strongest case" "REFERENCE.md requires arguing strongest dismissal case before bump"
+run_content_eval "$REFERENCE_MD" "/diagnose reachability loop|reachability loop.*\\/diagnose" "REFERENCE.md documents the available /diagnose reachability loop"
+run_content_eval "$REFERENCE_MD" "real potential vulnerability" "REFERENCE.md requires real potential vulnerability proof"
+run_content_eval "$REFERENCE_MD" "Package.json admission gate" "REFERENCE.md documents package.json admission gate"
+run_content_eval "$REFERENCE_MD" "[Pp]roven not reachable.*dismiss|dismiss.*[Pp]roven not reachable" "REFERENCE.md dismisses only proven-not-reachable findings"
+run_content_eval "$REFERENCE_MD" "[Uu]ncertain.*escalate|escalate.*[Uu]ncertain" "REFERENCE.md escalates uncertain findings"
+run_content_eval "$REFERENCE_MD" "code smell|burn-down queue" "REFERENCE.md treats overrides/resolutions as burn-down debt"
+run_content_eval "$REFERENCE_MD" "native/in-house|in-house code|dependency surface removal" "REFERENCE.md prefers lower dependency surface before overrides"
+
+# ── Minimum release age gates ────────────────────────────────────
+
+run_content_eval "$SKILL_MD" "minimum release age gate audit" "SKILL.md requires release age gate audit"
+run_content_eval "$REFERENCE_MD" "Minimum release age gate audit" "REFERENCE.md documents release age gate audit"
+run_content_eval "$REFERENCE_MD" "bunfig\\.toml.*minimumReleaseAge|minimumReleaseAge.*bunfig\\.toml" "REFERENCE.md covers Bun release gate config"
+run_content_eval "$REFERENCE_MD" "\\.npmrc.*min-release-age|min-release-age.*\\.npmrc" "REFERENCE.md covers npm release gate config"
+run_content_eval "$REFERENCE_MD" "pnpm-workspace\\.yaml.*minimumReleaseAge|minimumReleaseAge.*pnpm-workspace\\.yaml" "REFERENCE.md covers pnpm release gate config"
+run_content_eval "$REFERENCE_MD" "\\.yarnrc\\.yml.*npmMinimalAgeGate|npmMinimalAgeGate.*\\.yarnrc\\.yml" "REFERENCE.md covers Yarn release gate config"
+run_content_eval "$REFERENCE_MD" "WARN.*release age gate missing|release age gate missing.*WARN" "REFERENCE.md warns instead of silently passing when age gate absent"
+
+# ── Socket.dev web-only supply-chain scan ────────────────────────
+
+run_content_eval "$SKILL_MD" "Socket\\.dev web check|socket\\.dev web check" "SKILL.md wires Socket.dev web check"
+run_content_eval "$REFERENCE_MD" "Socket\\.dev web check" "REFERENCE.md documents Socket.dev web check"
+run_content_eval "$REFERENCE_MD" "https://socket\\.dev/npm/package" "REFERENCE.md uses Socket package web pages"
+run_content_eval "$REFERENCE_MD" "no Socket CLI|no socket CLI|No Socket CLI" "REFERENCE.md makes Socket check web-only"
+run_content_eval "$REFERENCE_MD" "install script|typosquat|unstable ownership|native code|shell access|environment variable access" "REFERENCE.md lists Socket attack vectors"
+
+# ── Automatic internal skill gates ───────────────────────────────
+
+run_content_eval "$SKILL_MD" "/resilience-review" "SKILL.md auto-runs resilience-review before PR"
+run_content_eval "$SKILL_MD" "gh issue create" "SKILL.md creates tracking issues for security debt"
+run_content_eval "$SKILL_MD" "/review" "SKILL.md auto-runs review before PR"
+run_content_eval "$REFERENCE_MD" "Automatic internal skill gates" "REFERENCE.md documents automatic internal skill gates"
+run_content_eval "$REFERENCE_MD" "resilience-review.*before PR|before PR.*resilience-review" "REFERENCE.md runs resilience-review before PR"
+run_content_eval "$REFERENCE_MD" "gh issue create.*missing release age|missing release age.*gh issue create" "REFERENCE.md sends release gate debt to a tracking issue"
+run_content_eval "$REFERENCE_MD" "review.*package\\.json admission gate|package\\.json admission gate.*review" "REFERENCE.md review checks admission gate"
+
+if grep -qE '/(upgrade-dependency|to-tickets)|diagnosing-bugs|/github:gh-fix-ci|snyk-project-create-guard\.sh|SNYK_ALLOW_EXISTING_PROJECT_MONITOR|SNYK_EXISTING_PROJECT_ID|PreToolUse guard' "$SKILL_MD" "$REFERENCE_MD"; then
+  echo "  FAIL  migrated Snyk docs reference unavailable ui-harness skills or hooks"
+  FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: migrated Snyk docs contain unavailable ui-harness references"
+else
+  echo "  PASS  migrated Snyk docs only reference available ui-harness skills and hooks"
+  PASS=$((PASS + 1))
+fi
 
 # ── lockfile-sync-check.sh hook behavior ────────────────────────
 
@@ -294,6 +361,8 @@ run_content_eval "$SKILL_MD" "[Tt]op-level|direct dep" "SKILL.md prefers top-lev
 run_content_eval "$SKILL_MD" "[Ll]ast resort|last-resort" "SKILL.md treats overrides/resolutions as last resort"
 run_content_eval "$SKILL_MD" "resolutions|overrides|replace" "SKILL.md acknowledges resolutions/overrides/replace mechanisms"
 run_content_eval "$SKILL_MD" "[Bb]loat|scale poorly|do not scale|don.t scale" "SKILL.md explains why overrides do not scale"
+run_content_eval "$REF_MD" "Dependency surface removal" "REFERENCE.md has dependency surface removal step"
+run_content_eval "$REF_MD" "Lower third-party surface area" "REFERENCE.md names lower third-party surface as the durable win"
 
 # REFERENCE.md must document the full upgrade-priority ladder
 REF_MD="$SKILL_DIR/REFERENCE.md"
@@ -315,6 +384,21 @@ run_content_eval "$REF_MD" "snyk test --file=go\.mod" "REFERENCE.md runs snyk te
 run_content_eval "$REF_MD" "replace.{0,3}directive" "REFERENCE.md flags Go replace directive as last resort"
 run_content_eval "$REF_MD" "go\.sum" "REFERENCE.md commits go.sum alongside go.mod"
 run_content_eval "$REF_MD" "call graph|reachability" "REFERENCE.md leverages govulncheck reachability"
+
+# ── Bazel Snyk parity ─────────────────────────────────────────
+
+run_content_eval "$SKILL_MD" "single Snyk vulnerability|pasted Snyk|Snyk output" "SKILL.md accepts pasted single-vulnerability Snyk output"
+run_content_eval "$SKILL_MD" "MODULE\.bazel" "SKILL.md checks MODULE.bazel for Bazel-managed deps"
+run_content_eval "$SKILL_MD" "bazel/repositories\.bzl" "SKILL.md checks bazel/repositories.bzl for http_archive deps"
+run_content_eval "$SKILL_MD" "bazel mod deps --lockfile_mode=update" "SKILL.md regenerates Bazel module lockfile"
+run_content_eval "$SKILL_MD" "Backport|backport" "SKILL.md requires backport assessment for Bazel Snyk fixes"
+run_content_eval "$REF_MD" "Bazel track|Bazel Snyk" "REFERENCE.md documents the Bazel Snyk track"
+run_content_eval "$REF_MD" "ticket|FIXES=" "REFERENCE.md preserves ticket auto-linking for Bazel PRs"
+run_content_eval "$REF_MD" "OpenSSL|FIPS|CMVP" "REFERENCE.md documents OpenSSL FIPS handling"
+run_content_eval "$REF_MD" "artifact mirror|mirrored artifact|S3" "REFERENCE.md documents artifact mirror dependency flow"
+run_content_eval "$REF_MD" "Never change.*mirrored.*github\.com|mirrored.*upstream.*ask" "REFERENCE.md forbids silently swapping mirrored artifact URLs to direct upstream hosts"
+run_content_eval "$REF_MD" "draft PR|--draft" "REFERENCE.md opens Bazel Snyk PRs as draft"
+run_content_eval "$REF_MD" "pull_request_template\.md|PR template" "REFERENCE.md uses the live target PR template"
 
 # ── Existing .snyk revisit (cleanup stale ignores) ──────────────
 
@@ -339,10 +423,32 @@ run_content_eval "$REF_MD" "team group|team-group|CODEOWNERS team" "REFERENCE.md
 run_content_eval "$REF_MD" "only individual reviewers|lone individual|without a team" "REFERENCE.md rejects PRs with only individual reviewers"
 run_content_eval "$REF_MD" "security team group|security.team.*automatically" "REFERENCE.md auto-adds security team on dismissals/overrides"
 
-# ── Per-branch Snyk monitor (prevent project-id overwrite) ─────
+# ── Existing-project Snyk monitor (prevent project churn) ───────
 
-run_content_eval "$SKILL_MD" "--target-reference|--project-name" "SKILL.md pins snyk monitor to a per-branch reference"
-run_content_eval "$SKILL_MD" "overwrite|clobber|last ran monitor|collapses" "SKILL.md explains the per-branch overwrite trap"
-run_content_eval "$REF_MD" "--target-reference" "REFERENCE.md uses --target-reference on snyk monitor"
-run_content_eval "$REF_MD" "--project-name" "REFERENCE.md documents --project-name fallback"
-run_content_eval "$REF_MD" "overwrite each other|collapses into|bare.*snyk monitor" "REFERENCE.md explains why bare snyk monitor breaks per-branch state"
+run_content_eval "$SKILL_MD" "existing Snyk project|existing project|reuse existing" "SKILL.md reuses existing Snyk projects"
+run_content_eval "$SKILL_MD" "Never create|Do not create|must not create" "SKILL.md forbids creating Snyk projects during audits"
+run_content_eval "$SKILL_MD" "audit branch|sweep branch|YYYY-MM-DD|date-derived" "SKILL.md calls out audit/sweep branch project churn"
+run_content_eval "$REF_MD" "snyk monitor.*creates a project|creates a project.*snyk monitor" "REFERENCE.md documents that snyk monitor is a create-capable write"
+run_content_eval "$REF_MD" "/orgs/\\{org_id\\}/projects|List all Projects|org\\.project\\.read" "REFERENCE.md preflights existing projects via Snyk Projects API"
+run_content_eval "$REF_MD" "target_reference|target_file|names_start_with" "REFERENCE.md matches existing projects by stable Snyk identity"
+run_content_eval "$REF_MD" "skip.*monitor|do not run.*monitor|must not run.*monitor" "REFERENCE.md skips monitor when no existing project match is found"
+
+org_arg_count=$(grep -c -- '--org=' "$REF_MD" || true)
+canonical_org_arg_count=$(grep -c -- '--org="\$SNYK_ORG_ID"' "$REF_MD" || true)
+if [ "$org_arg_count" -gt 0 ] && [ "$org_arg_count" -eq "$canonical_org_arg_count" ]; then
+  echo "  PASS  Snyk preflight and monitor use one canonical org identity"
+  PASS=$((PASS + 1))
+else
+  echo "  FAIL  Snyk monitor org differs from the preflight org identity"
+  FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: Snyk monitor and preflight use different org identities"
+fi
+
+if grep -qE 'target-reference="?\$branch|target-reference=<branch>|project-name=.*\$\{?repo.*branch|ref="\$\{repo_slug\}-\$\{branch\}"' "$SKILL_MD" "$REF_MD"; then
+  echo "  FAIL  Snyk monitor must not use audit branch/date-derived project identity"
+  FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: Snyk monitor uses audit branch/date-derived identity"
+else
+  echo "  PASS  Snyk monitor avoids audit branch/date-derived project identity"
+  PASS=$((PASS + 1))
+fi

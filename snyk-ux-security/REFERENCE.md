@@ -27,6 +27,14 @@ User can override any of these in the prompt:
 
 ## Per-path detail
 
+Reachable remediation follows the upgrade flow below. This skill owns vulnerability triage, Snyk IO state, the version path, SemVer confidence, changelog/migration/codemod research, related dependency checks, and the apply-vs-issue risk gate.
+
+Bazel remediation is intentionally separate from the JS/Go upgrade flow:
+the risk is usually in Bazel manifest semantics, release/backport branch
+differences, S3-hosted artifacts, and FIPS validation. Use the
+[Bazel track](#bazel-track) when the finding maps to
+`MODULE.bazel` or `bazel/repositories.bzl`.
+
 ### 2a. Existing `.snyk` revisit (every run, before scan)
 
 Run this before `snyk test` so the rescan reflects cleanup. Goal:
@@ -47,7 +55,8 @@ For every entry in the repo-root `.snyk` (if any):
    by a prior sweep. Remove the ignore:
    ```bash
    snyk ignore --remove --id=<issue-id>
-   # or edit .snyk directly + snyk monitor
+   # or edit .snyk directly; publish only through the existing-project
+   # monitor gate in 2a.1
    ```
    Log under PR `Dismissed (cleaned up)` section.
 
@@ -66,58 +75,133 @@ Report: include a `Revisited .snyk` count (existing entries
 inspected) and a `Cleaned up` count (entries removed) in the PR
 body + subagent 2k report. Cleanup trims long-term override debt.
 
-### 2a.1 Scan
+### 2a.1 Scan + existing Snyk project preflight
 
-Resolve the branch reference once:
+`snyk monitor` creates a project in Snyk IO when the supplied identity
+does not already exist. In this skill, audits must **not** create new
+Snyk projects, targets, apps, or resources. The default audit signal is
+`snyk test`; `monitor` is a gated publish step that reuses exactly one
+existing Snyk project.
+
+Resolve repo identity once:
 ```bash
-branch=$(git rev-parse --abbrev-ref HEAD)
-repo_slug=$(basename "$(git rev-parse --show-toplevel)")
-ref="${repo_slug}-${branch}"           # e.g. cloudv2-release-2.8
+repo_slug=$(basename "$(git rev-parse --show-toplevel)" .git)
 ```
+
+The audit branch (often `chore/snyk-sweep-YYYY-MM-DD`) is **never** a
+Snyk identity. Do not derive `--target-reference`, `--project-name`,
+target names, app names, or resource names from the audit branch,
+sweep branch, worktree path, PR number, date, or timestamp.
+
+Preflight existing projects before any monitor call:
+```bash
+# Requires Snyk Projects API read permission (`org.project.read`).
+# Query `/orgs/{org_id}/projects` and filter by stable Snyk identity:
+# `names_start_with`, `target_file`, and existing `target_reference`.
+: "${SNYK_ORG_ID:?Set SNYK_ORG_ID to the existing Snyk org UUID}"
+: "${SNYK_TOKEN:?Set SNYK_TOKEN for read-only project preflight}"
+curl -fsS \
+  -H "Authorization: Token ${SNYK_TOKEN}" \
+  -H "Accept: application/vnd.api+json" \
+  "https://api.snyk.io/rest/orgs/${SNYK_ORG_ID}/projects?version=2025-11-05&names_start_with=${repo_slug}" \
+  > .snyk-projects.json
+```
+
+Match rules:
+
+1. Match by existing org, project `name`, `target_file`
+   (`package.json`, workspace manifest path, `go.mod`, and so on), and
+   `target_reference` if the existing project has one.
+2. Exactly one match per target file -> monitor may run using that
+   exact identity.
+3. Zero matches -> **skip monitor**. Do not run `snyk monitor`; do not
+   create a project. Record `monitor: skipped (no existing project)`.
+4. More than one match -> **skip monitor** and ask the Snyk/security
+   owner to disambiguate. Do not guess.
+5. Do not run `snyk monitor --all-projects`. Use per-file monitor calls
+   only after exact preflight.
 
 JS path:
 ```bash
 snyk test --all-projects --json > .snyk-findings.json
-snyk monitor --all-projects --target-reference="$branch"
-# Fallback on older CLIs without --target-reference:
-# snyk monitor --all-projects --project-name="$ref"
 bun audit --json > .bun-audit.json
+
+# Existing-project publish only, after the API preflight found one
+# exact project for this target_file.
+snyk monitor \
+  --file="$existing_target_file" \
+  --org="$SNYK_ORG_ID" \
+  --project-name="$existing_project_name" \
+  ${existing_target_reference:+--target-reference="$existing_target_reference"}
 ```
 
 Go path:
 ```bash
 snyk test --file=go.mod --json > .snyk-findings.json
-snyk monitor --file=go.mod --target-reference="$branch"
-# Fallback: snyk monitor --file=go.mod --project-name="$ref"
 govulncheck -json ./... > .govulncheck.json
+
+# Existing-project publish only, after the API preflight found one
+# exact go.mod project.
+snyk monitor \
+  --file="$existing_target_file" \
+  --org="$SNYK_ORG_ID" \
+  --project-name="$existing_project_name" \
+  ${existing_target_reference:+--target-reference="$existing_target_reference"}
 ```
 
-**Why `--target-reference` / `--project-name` is mandatory:**
-Without it, every branch that runs `snyk monitor` for the same
-repo collapses into a single Snyk IO project id. Master and
-release branches then **overwrite each other** on every run, so
-the dashboard shows only the findings from whichever branch ran
-`monitor` last -- per-branch state is lost.
-
-Observed: `master` + `release-2.8` both monitoring into project id
-`22b24cf1-96d9-49e6-9c88-0640121b3aa0` means the security team
-cannot distinguish which branch has which findings.
-
-Rule: every `snyk monitor` invocation (new scan and `.snyk`
-revisit-cleanup push) supplies `--target-reference="$branch"`.
-If the CLI version does not support `--target-reference`, fall
-back to `--project-name="${repo}-${branch}"`. The skill never
-runs a bare `snyk monitor` without one of the two.
+If the existing project has no `target_reference`, omit
+`--target-reference`; adding a new branch/reference would create
+another project. If the existing project uses a stable reference such
+as `main`, `master`, or a release line, reuse that exact value. Never
+use the audit branch.
 
 Snyk IO reads `yarn.lock`, not `bun.lock`. If JS repo has no
 `yarn.lock`, generate first: `bun install --yarn`.
 
+### 2a.2 JS package manager stance
+
+Use Snyk IO plus `bun audit` plus Socket.dev for JS signal. Do not
+reach for npm tooling during sweeps.
+
+Rules:
+
+1. **Runtime/install/update/audit commands use bun.** Use `bun why`,
+   `bun update`, `bun install`, `bun install --yarn`, `bun audit`,
+   and `bun info`. Do not run `npm audit`, `npm install`,
+   `npm update`, `npm view`, `yarn add`, `yarn audit`, or `pnpm audit`.
+2. **`yarn.lock` is a Snyk compatibility mirror.** Generate it with
+   `bun install --yarn`; do not run Yarn directly.
+3. **`package-lock.json` is not part of the default flow.** Do not
+   create, update, or commit `package-lock.json` for a bun project.
+   If a Snyk sweep introduces one, delete it and rerun
+   `bun install && bun install --yarn`.
+4. **Existing `package-lock.json` gets suspicion, not churn.** If the
+   repo also has `bun.lock` or project docs say bun, treat
+   `package-lock.json` as stale/wrong and leave a note or remove it
+   only if the sweep created it. If the repo is explicitly npm-only
+   (`packageManager: "npm@..."`, no bun/yarn lockfiles), ask the user
+   before touching dependencies; this skill is optimized for bun +
+   Snyk IO.
+5. **Evidence gate for npm transitives.** Deep Node/npm transitives are
+   commonly not exploitable from shipped code. A Snyk "introduced via"
+   chain is not enough. Dismiss only when repo evidence proves the
+   vulnerable path is not reachable and Socket.dev shows no credible
+   install/build-time risk. Escalate uncertain findings.
+
 ### 2b. Exploitability triage
 
-For every finding, decide REACHABLE vs NOT-REACHABLE **before any
-bump**. This is the most important gate -- skipping it leads to
+For every finding, decide REACHABLE vs NOT-REACHABLE vs UNCERTAIN
+**before any bump**. This is the most important gate -- skipping it leads to
 reflex `resolutions`/`overrides` that bloat `node_modules` and force
 more upgrades later.
+
+Default stance for npm/Node.js packages: Snyk output is an allegation,
+not proof. Many findings are false positives for browser/UI repos,
+dev-only tools, optional server plugins, and packages present only in
+lockfiles. Dismiss with `.snyk` when no repo code path reaches the
+vulnerable behavior and Socket.dev does not show credible
+install-time/build-time risk. If the evidence remains uncertain,
+escalate to the security owner rather than auto-ignoring the finding.
 
 Inputs:
 - Advisory attack vector: read the CVE / GHSA description. Which
@@ -132,6 +216,159 @@ Inputs:
   code path? Example: `hono-server` ships as a transitive of the MCP
   SDK protocol package, but we may only use the client half. Server
   feature never imported -> NOT-REACHABLE.
+
+### /steelman transitive bump gate
+
+Invoke `/steelman` before any JS transitive-only bump, parent bump, or
+override/resolution when the vulnerable package is absent from
+`package.json`.
+
+Goal: prevent "fixes" that merely grow `package.json` or lockfile debt
+when the app does not use the vulnerable package.
+
+Required output in PR evidence:
+
+1. **Claim to challenge:** "We need to bump or override `<pkg>`."
+2. **Strongest case to dismiss:** argue the strongest case for
+   dismissal first, using repo evidence:
+   - package absent from `package.json`;
+   - `bun why <pkg>` shows only deep transitive path;
+   - no direct imports;
+   - parent feature/code path unused by shipped UI;
+   - vulnerable symbol not called;
+   - Socket.dev shows no install-time/build-time credible vector.
+3. **Contradicting evidence:** direct import, reachable parent call,
+   vulnerable symbol usage, install script, build-time execution, or
+   critical Socket.dev supply-chain alert.
+4. **Verdict:**
+   - `dismiss`: strongest dismissal case survives -> `snyk ignore`
+     with parent chain + symbol evidence.
+   - `fix-parent`: vulnerable path reachable only through parent ->
+     bump parent, not transitive.
+   - `override-last-resort`: direct + parent blocked, vector credible,
+     and policy cannot dismiss.
+
+If evidence proves the vulnerable behavior is not reachable, the bump
+makes no sense. Dismiss with expiry instead of growing the dependency
+surface. If the evidence is inconclusive, escalate; absence of proof is
+not proof that the finding is safe to ignore.
+
+### /diagnose reachability loop
+
+Invoke `/diagnose` before any `package.json` change that claims to fix
+a JS security finding. Treat the Snyk finding as a bug report and build
+a fast feedback loop that can prove the vulnerable surface is relevant
+to this repo.
+
+Acceptable loops:
+
+- `grep` / import graph proves app code imports the vulnerable package
+  or the direct parent feature that calls it.
+- A unit or integration harness calls the same parent API and reaches
+  the vulnerable symbol / file.
+- A bundler or build script path proves the vulnerable package executes
+  during build, install, or CI.
+- Socket.dev shows a critical install-time or build-time supply-chain
+  vector: known malware, install script payload, shell access,
+  environment variable access, typosquat, or unstable ownership plus a
+  newly introduced version.
+
+Not enough:
+
+- Snyk says "introduced via" without evidence the parent path is used.
+- The package exists somewhere in `node_modules`.
+- The package name appears only in lockfiles.
+- "Fix available" exists but the package is several layers deep and no
+  vulnerable symbol is reachable.
+
+Verdict rule:
+
+- Proven reachable / credible install-time vector -> proceed to the
+  [Package.json admission gate](#packagejson-admission-gate).
+- Proven not reachable -> dismiss with `snyk ignore`, expiry, parent
+  chain, and diagnostic evidence.
+- Uncertain -> escalate to the security owner; do not auto-ignore or
+  mutate `package.json`.
+
+The PR must call this a **real potential vulnerability** before any
+package manifest change is allowed.
+
+### Package.json admission gate
+
+`package.json` is not a suppression ledger. It is the public dependency
+surface. A Snyk fix may mutate `package.json` only when one of these
+admission reasons is true:
+
+1. **Already-direct vulnerable dependency.** The vulnerable package is
+   already declared in `dependencies` / `devDependencies`, and
+   `/diagnose` proves direct use or install/build-time execution.
+2. **Reachable direct parent.** The vulnerable package is transitive,
+   but the direct parent is already declared and `/diagnose` proves the
+   parent path reaches the vulnerable behavior. Bump the parent, not the
+   transitive.
+3. **Last-resort override.** Direct and parent fixes are blocked,
+   the vulnerability is a real potential vulnerability, security policy
+   cannot dismiss it, and the PR includes a removal tracking issue.
+
+Anything else stays out of `package.json`. Use `.snyk` dismissal with a
+90-day expiry and precise reason only when the finding is proven not
+reachable. Escalate uncertain findings instead of hiding them or
+creating dependency debt.
+
+Treat every new `resolutions` / `overrides` entry as a code smell and
+every existing long override list as a burn-down queue. The safest
+dependency is the one absent from the graph: before adding an override,
+ask whether the direct parent can be deleted, whether the feature is
+unused, or whether native/in-house code can replace the third-party
+dependency with less total surface area. Lower third-party surface area
+means fewer future advisories, fewer transitive surprises, and less
+lockfile churn.
+
+### Transitive-only dismissal checklist
+
+Use this checklist before adding any override/resolution for a finding
+several layers deep in `node_modules`.
+
+1. **Direct dependency absence is evidence.** If the vulnerable package
+   is not listed in `package.json`, that supports a dismissal path; it
+   does not justify adding the transitive as a new top-level dependency.
+2. Identify the parent chain with `bun why <pkg>` and record the first
+   direct parent that introduced it.
+3. Grep imports for both package names:
+   ```bash
+   grep -rn "from ['\"]<pkg>['\"]\\|require(['\"]<pkg>['\"])" .
+   grep -rn "from ['\"]<parent>['\"]\\|require(['\"]<parent>['\"])" .
+   ```
+4. Map the advisory to a vulnerable symbol / file / runtime behavior.
+   A CVE on a server parser, CLI, dev-only loader, or optional plugin
+   is not automatically reachable from a browser UI bundle.
+5. If the parent code path is unused, optional, SSR-only, build-only, or
+   outside shipped UI code, dismiss with `snyk ignore` and a precise
+   reason. Include the parent chain + symbol proof.
+6. If the parent code path is reachable, first ask whether the parent
+   dependency or feature can be removed entirely. Prefer deletion,
+   native platform behavior, or small in-house code when that lowers
+   total dependency surface area.
+7. If removal is not viable, fix the parent before any override. Do
+   not add the vulnerable transitive to `package.json` just to make a
+   suppression-only override easier.
+8. Override/resolution only when direct + parent remediation and
+   dependency removal are all blocked, and the vulnerability is still
+   reachable or Snyk cannot be ignored for policy reasons. Add a
+   removal issue and a burn-down note.
+9. In short: do not add a transitive package to `package.json` just to
+   suppress a nested finding.
+
+Anti-pattern to reject in review:
+
+```diff
++ "vulnerable-transitive": "x.y.z"
++ "resolutions": { "vulnerable-transitive": "x.y.z" }
+```
+
+If we do not use the library directly, this grows the public dependency
+surface just to silence a nested finding. Prefer `.snyk` dismissal with
+expiry when not reachable, or parent bump when reachable.
 
 Decision:
 
@@ -152,18 +389,22 @@ Decision:
      must land in git alongside the bumps. A dismissal that only
      lives in the PR description is invisible to CI, auditors, and
      the next sweep.
-  3. Push dismissals to Snyk IO:
+  3. Publish dismissals to Snyk IO only if an existing project match
+     was verified in 2a.1:
      ```bash
-     # Always include --target-reference="$branch" (or
-     # --project-name="${repo}-${branch}") so per-branch state is
-     # preserved; see 2a rule below.
-     snyk monitor --all-projects --target-reference="$branch"   # JS
-     snyk monitor --file=go.mod --target-reference="$branch"    # Go
+     # Use the exact existing Snyk project identity from 2a.1.
+     snyk monitor --file="$existing_target_file" \
+       --org="$SNYK_ORG_ID" \
+       --project-name="$existing_project_name" \
+       ${existing_target_reference:+--target-reference="$existing_target_reference"}
      ```
-     Monitor applies the `.snyk` policy to the IO project, so the IO
-     dashboard shows the issue as `Ignored` with the reason +
-     expiry. Re-run `snyk test` locally to confirm the issue is
-     listed under `Ignored issues` before opening the PR.
+     Monitor applies the `.snyk` policy to the existing IO project, so
+     the dashboard shows the issue as `Ignored` with the reason +
+     expiry. If there is no exact existing project match, **skip
+     monitor** and record that IO will update after merge through the
+     normal Snyk integration or after a security owner links the
+     existing resource. Re-run `snyk test` locally to confirm the issue
+     is listed under `Ignored issues` before opening the PR.
   4. **Do not** add the package to `resolutions` / `overrides` /
      `replace`. Dismissal replaces the bump, it does not accompany
      one.
@@ -178,8 +419,10 @@ Decision:
   opening the PR. Do not fall back to "note in the description"
   -- escalate instead.
 
-- **REACHABLE** (or exploit vector credible and reachability cannot
-  be proved false) -- proceed to 2c.
+- **UNCERTAIN** -- stop and escalate to the security owner. Do not
+  auto-ignore and do not mutate dependency manifests without a verdict.
+
+- **REACHABLE** (or exploit vector credible) -- proceed to 2c.
 
 ### 2c. Upgrade priority (top-level first, override last)
 
@@ -198,9 +441,14 @@ PR body.
    our direct deps pulls it. Bump that direct dep to a version whose
    transitives pin the fixed version. Prefer this over override --
    one bump, upstream-maintained.
-3. **Override / resolution / replace (last resort).** Only when
-   direct + parent bump are both blocked (upstream has no fix;
-   fixing version needs React 19 and our React 18 pin stands; etc).
+3. **Dependency surface removal.** If the parent dependency exists only
+   for a small/unused feature, remove it or replace it with native or
+   in-house code before accepting more third-party surface area. This
+   is often safer than pinning nested packages forever.
+4. **Override / resolution / replace (last resort).** Only when
+   direct + parent bump and dependency removal are all blocked
+   (upstream has no fix; fixing version needs React 19 and our React
+   18 pin stands; etc).
    - JS: `package.json` `"resolutions"` (bun/yarn-compatible) or
      `"overrides"` (npm-compatible). We use `resolutions` under bun.
    - Go: `replace` directive in `go.mod`.
@@ -209,10 +457,151 @@ PR body.
      (`Overrides added -- follow-up to remove`).
    - Explain in the PR body why steps 1 and 2 were blocked.
 
-**Why this order matters:** every added override is tomorrow's
-forced upgrade. Overrides accumulate, node_modules bloats,
-maintenance compounds weekly. Top-level bumps are upstream-tracked
-and self-maintaining.
+**Why this order matters:** every added override is tomorrow's forced
+upgrade and a smell that the dependency graph is taking control of the
+app. Overrides accumulate, node_modules bloats, maintenance compounds
+weekly, and each nested pin can pull in more packages with their own
+advisories. Lower third-party surface area is the durable win.
+
+### Minimum release age gate audit (JS)
+
+For Node.js / TypeScript / UI repos, treat dependency installation as a
+supply-chain boundary. A lockfile helps reproducibility, but it does not
+stop a fresh malicious version from entering the lockfile during an
+upgrade. Audit the detected package manager before applying a JS bump.
+
+Detection:
+
+| Package manager signal | Config to check | Expected gate |
+|---|---|---|
+| `bun.lock` or bun toolchain | `bunfig.toml` | `minimumReleaseAge = <seconds>` |
+| `package-lock.json` or npm toolchain | `.npmrc` | npm-only exception; otherwise warn and do not touch `package-lock.json` |
+| `pnpm-lock.yaml` | `pnpm-workspace.yaml` or `.npmrc` | `minimumReleaseAge: <minutes>` |
+| `.yarnrc.yml` / modern Yarn | `.yarnrc.yml` | `npmMinimalAgeGate: "<duration>"` |
+
+If the detected package manager has no gate, add this PR warning:
+
+```markdown
+## Supply-chain gate warnings
+- WARN: release age gate missing for <bun|npm|pnpm|yarn>.
+  Configure the package-manager-native minimum release age gate before
+  broad dependency churn. This sweep continued because it fixes a Snyk
+  issue, but future upgrades should not silently accept fresh releases.
+```
+
+Do not invent config in the Snyk PR unless the user asked for policy
+hardening. The warning is enough for a vuln sweep; a separate follow-up
+can set org-wide policy.
+
+If `package-lock.json` is present in a bun repo, add this PR warning
+instead of using npm:
+
+```markdown
+## Supply-chain gate warnings
+- WARN: package-lock.json present in a bun/Snyk sweep. Do not use npm
+  or commit package-lock churn. Keep `bun.lock` as runtime truth and
+  `yarn.lock` as the Snyk IO mirror generated by `bun install --yarn`.
+```
+
+Reference docs checked while creating this gate:
+
+- Bun: `minimumReleaseAge` in `bunfig.toml` or
+  `--minimum-release-age` filters newly published npm versions.
+  https://bun.com/docs/pm/cli/install#minimum-release-age
+- npm: `min-release-age` in `.npmrc` constrains installs to versions
+  older than the given number of days.
+  https://docs.npmjs.com/cli/install/#min-release-age
+- pnpm: `minimumReleaseAge` is minutes, applies to direct and
+  transitive deps, and has exclusions.
+  https://pnpm.io/settings#minimumreleaseage
+- Yarn: `npmMinimalAgeGate` delays installing newly published packages;
+  `npmPreapprovedPackages` bypasses package gates.
+  https://yarnpkg.com/features/security#age-gate
+
+### Socket.dev web check
+
+Use Socket.dev as an extra web-only supply-chain signal for JS package
+decisions. This is **no Socket CLI** flow: no install, no `socket`
+command, no local plugin requirement.
+
+For each package involved in a bump, parent bump, override, or
+dismissal decision:
+
+1. Open the package page:
+   - unscoped: `https://socket.dev/npm/package/<pkg>`
+   - scoped: `https://socket.dev/npm/package/%40scope/name`
+2. Check the overview / alerts / dependencies pages. Record high-signal
+   attack vectors:
+   - known malware, typosquat, protestware/troll package;
+   - recently published, unstable ownership, new author;
+   - install script, shell access, environment variable access,
+     filesystem access, network access, telemetry;
+   - obfuscated file, high entropy strings, native code;
+   - git/http dependency, wildcard dependency, unpublished/deprecated
+     package, unmaintained package.
+3. Treat Socket as a triage signal, not a replacement for Snyk:
+   - A critical Socket supply-chain alert can upgrade a NOT-REACHABLE
+     CVE into "credible vector" if install-time or build-time execution
+     affects CI/dev machines.
+   - Low capability alerts alone do not block a security bump, but must
+     be recorded when they explain added risk.
+4. Add a `Socket.dev` row to PR evidence:
+   `pkg`, page URL, highest alert, attack vector, decision impact.
+
+Useful Socket docs:
+
+- Package pages expose score, alerts, dependencies, maintainers, and
+  version views: https://socket.dev/npm/package/react
+- Socket alert categories include supply-chain risk, quality,
+  maintenance, vulnerability, and license:
+  https://docs.socket.dev/docs/package-issues
+- Socket GitHub/App docs list common vectors like install scripts,
+  telemetry, native code, known malware, mutable git/http deps,
+  protestware, and typosquats:
+  https://docs.socket.dev/docs/socket-for-github
+- Socket capability detection covers network, shell, filesystem,
+  `eval()`, and environment variables:
+  https://docs.socket.dev/docs/faq#how-does-sockets-capability-detection-work
+
+### Automatic internal skill gates
+
+The Snyk sweep owns security state, so it should invoke these skills
+internally instead of relying on the user to remember them.
+
+1. **`/resilience-review` before PR.**
+   Run after verify and before commit/PR. Focus the review on:
+   - `.snyk` write succeeded, expiry exists, rescan shows `Ignored`;
+   - existing-project Snyk IO monitor pushed or skipped with reason;
+   - package manager detection is correct;
+   - missing release age gate warning is visible;
+   - Socket.dev web check result is recorded;
+   - override has removal issue and rollback path;
+   - ambiguous workspace or multi-lockfile cases have guards.
+   `NEEDS_GUARDS` means fix or document an explicit accepted risk in
+   PR evidence.
+
+2. **Create tracking issues with `gh issue create` for security debt.**
+   Create or draft issues whenever the sweep leaves follow-up work:
+   - missing release age gate;
+   - override / resolution / Go replace added;
+   - React 19 blocked;
+   - upstream has no parent fix;
+   - no exact existing Snyk project match or ambiguous project match;
+   - Socket.dev critical/high vector needs owner review but was not
+     fixed in this PR.
+   If tracker publishing is unavailable, include issue drafts in the PR
+   body with owners and acceptance criteria.
+
+3. **`/review` before PR.**
+   Review must explicitly check the package.json admission gate,
+   `/steelman` dismissal argument, `/diagnose` reachability loop,
+   `.snyk` dismissal evidence, and absence of dependency-surface growth
+   without proof. A review finding on these gates blocks PR open unless
+   the user or security owner overrides it in writing.
+
+4. **PR tail.**
+   After PR open, failing checks route to `/diagnose`; review
+   comments route to `/resolve-pr-feedback`.
 
 ### 2d. React 18 gate (JS, mandatory)
 
@@ -298,7 +687,7 @@ go vet ./...
 govulncheck ./...          # must be clean for addressed CVEs
 ```
 
-Any fail -> diagnose, fix, re-run. Must pass before next step. No
+Any fail -> `/diagnose`, fix, re-run. Must pass before next step. No
 revert -- fix forward. Truly stuck -> escalate, no skip.
 
 ### 2h. Commit
@@ -316,7 +705,9 @@ Overrides added (follow-up to remove):
 
 Lockfiles: bun.lock + yarn.lock regenerated (bun i && bun i --yarn).
 Go modules: go.mod + go.sum regenerated (go mod tidy).
-Policy: .snyk updated with <n> ignore entries; snyk monitor pushed to IO.
+Policy: .snyk updated with <n> ignore entries.
+Existing-project monitor: pushed to existing Snyk IO project <id> /
+skipped (<reason>; no new project created).
 
 Skipped (React 19 peer only -- everything else migrated):
 - <pkg> -- react19-blocked
@@ -388,12 +779,43 @@ expired). Triggered by @<triggerer>.
 |---|---|---|---|---|---|---|
 | ... | ... | ... | ... | ... | direct / parent / override | 7->8->9 |
 
+## Reachability diagnosis (`/diagnose`)
+| Package | Finding | Feedback loop | Real potential vulnerability? | Decision |
+|---|---|---|---|---|
+| <pkg> | <CVE/GHSA> | grep/import graph / harness / Socket.dev critical vector | yes/no | bump parent / direct bump / dismiss to `.snyk` |
+
+## Package.json admission gate
+| Package | Admission reason | Why `.snyk` dismissal is not enough | Removal issue if override |
+|---|---|---|---|
+| <pkg> | already-direct / reachable parent / override-last-resort | <proof> | #NN or none |
+
+## Internal skill gates
+- `/resilience-review`: PASS / NEEDS_GUARDS / BLOCKED -- <summary>
+- `gh issue create`: <n> issue(s) created or drafted for missing release age gate / overrides / React 19 / upstream no fix / Snyk project ambiguity / Socket.dev critical vector
+- `/review`: PASS / BLOCKED -- package.json admission gate, `/steelman`, `/diagnose`, and `.snyk` evidence checked
+
+## Supply-chain gate warnings
+- WARN: release age gate missing for `<package-manager>` (if absent).
+  Follow-up: configure the package-manager-native minimum release age
+  gate (`bunfig.toml`, `.npmrc`, `pnpm-workspace.yaml`, or
+  `.yarnrc.yml`) before broad dependency churn.
+
+## Socket.dev web check
+No Socket CLI was installed or required.
+
+| Package | Socket URL | Highest alert | Attack vector | Decision impact |
+|---|---|---|---|---|
+| <pkg> | https://socket.dev/npm/package/<pkg> | <alert> | install script / typosquat / unstable ownership / native code / shell access / environment variable access / none | bumped / dismissed / escalated |
+
 ## Dismissed (not exploitable)
 
 All entries below were applied via `snyk ignore` (Snyk CLI writes to
-`.snyk` policy file, committed in this PR) and pushed to Snyk IO via
-`snyk monitor`. PR-description text alone is not an audit artifact --
-`.snyk` + IO project state are.
+`.snyk` policy file, committed in this PR). If the existing-project
+preflight found an exact match, `snyk monitor` pushed them to that
+existing Snyk IO project. If no exact match existed, monitor was
+skipped rather than creating a new project; the committed `.snyk` file
+is still the audit artifact. PR-description text alone is not an audit
+artifact.
 
 | Package | CVE | Vulnerable symbol | Our usage check | Reason | Snyk ignore id | Expiry | IO link |
 |---|---|---|---|---|---|---|---|
@@ -404,8 +826,9 @@ Verify: `snyk test` shows each row as `Ignored` before PR open.
 ## Dismissed (cleaned up)
 
 Existing `.snyk` entries removed this sweep -- transitive gone,
-reachability changed, or expiry passed. `snyk monitor` pushed the
-cleanup to IO so the dashboard reflects fewer live ignores.
+reachability changed, or expiry passed. Existing-project `snyk monitor`
+pushed the cleanup to IO when the project match was exact; otherwise
+monitor was skipped to avoid project churn.
 
 | Package | Original CVE | Original ignore id | Reason removed | Proof |
 |---|---|---|---|---|
@@ -426,6 +849,9 @@ cleanup to IO so the dashboard reflects fewer live ignores.
 ## Lockfiles
 JS: both regenerated via `bun i && bun i --yarn`. Snyk IO scans
 yarn.lock; runtime uses bun.lock.
+No npm commands ran, and no `package-lock.json` was created or
+updated. If `package-lock.json` already existed in a bun repo, it was
+reported as supply-chain drift instead of being used.
 Go: `go mod tidy` ran; `go.mod` + `go.sum` committed together.
 
 ## Changelog review
@@ -436,9 +862,12 @@ JS:
 - [x] `bun run lint:fix`
 - [x] `bun run type:check`
 - [x] `bun test`
+- [x] Minimum release age gate audit completed; warnings recorded if missing
+- [x] Socket.dev web check completed for JS packages; no Socket CLI used
 - [x] Snyk rescan clean for addressed CVEs
 - [x] `.snyk` committed with <n> new ignore entries
-- [x] `snyk monitor` pushed ignores to IO
+- [x] Existing-project `snyk monitor` pushed ignores to IO, or skipped
+      with reason and no new project created
 - [x] `snyk test` confirms all dismissed items show as `Ignored`
 Go:
 - [x] `go build ./...`
@@ -462,8 +891,11 @@ Subagent returns: path, ecosystem (js/go/both), branch, PR URL,
 triggerer (assignee), team reviewers (resolved from CODEOWNERS),
 labels applied, `.snyk` revisited count, `.snyk` cleaned-up count
 (transitive gone / reachable now / expired), newly-dismissed list
-(CVE + reason + snyk ignore id + expiry), `snyk monitor` push
-confirmation, bumped list, overrides-added list (CVE + blocker),
+(CVE + reason + snyk ignore id + expiry), existing-project
+`snyk monitor` status (pushed/skipped + reason), bumped list,
+overrides-added list (CVE + blocker), JS release-age gate status
+(configured/missing + package manager), Socket.dev findings
+(package + highest alert + decision impact),
 skipped list (reason), CI status.
 
 ## Aggregate
@@ -475,7 +907,174 @@ Main agent gathers reports. Summary table:
 
 Show React-19-blocked pkgs -- candidates for the React 18 -> 19
 migration plan. Show overrides-added as a follow-up backlog --
-remove each once upstream ships a fix.
+remove each once upstream ships a fix. Show release-age gate missing
+warnings and Socket.dev high/critical alerts as supply-chain follow-up
+items.
+
+## Bazel track
+
+Use for Snyk findings in Bazel dependency manifests. This mode normally
+starts from one pasted Snyk vulnerability summary, not a path sweep.
+
+### Parse and gate
+
+Extract from the pasted Snyk output:
+
+- CVE, GHSA, or Snyk issue id.
+- Vulnerable package, installed version, and fixed version.
+- "Introduced via" dependency path.
+- Remediation hint.
+
+Only fix findings resolved by increasing a dependency version. If the
+hint requires a code change, patch file, config change, or a product
+mitigation, stop and tell the user which non-bump action is needed.
+
+### Branch, ticket, and worktree
+
+Before edits:
+
+1. Show the current branch with `git branch --show-current`.
+2. Ask the user to confirm the target branch. Use the repo default or
+   mainline branch for primary fixes; release branches follow repo policy.
+3. Ask whether there is a ticket key. If provided, append `FIXES=<key>`
+   or the repo-specific tracker footer to every PR body so auto-linking
+   works.
+4. Fetch the confirmed branch and create a separate worktree. Branch
+   naming: `snyk/<cve-id>-<package>-<version>`. Include the target
+   branch in the worktree path so parallel backports do not collide.
+
+Work only in the worktree. Never modify the user's current checkout for
+Bazel CVE fixes.
+
+### Manifest validation
+
+Check both files on every target branch:
+
+```bash
+grep -n "<package>" bazel/repositories.bzl || true
+grep -n "<package>" MODULE.bazel || true
+```
+
+- `bazel/repositories.bzl` manages `http_archive` style dependencies,
+  including GitHub URLs and mirrored artifact URLs.
+- `MODULE.bazel` manages BCR dependencies through `bazel_dep`.
+
+A package may be in either file, and branch drift is common: the default
+branch can use BCR while a release branch still uses a mirrored artifact.
+If the package appears in neither file, stop and report that the Snyk
+path does not match this branch.
+
+### Update mechanism
+
+| Manifest location | Action | Follow-up |
+|---|---|---|
+| `MODULE.bazel` `bazel_dep` | Bump the version field. | Run `bazel mod deps --lockfile_mode=update`. If BCR has not published the fix yet, still open a draft PR and let CI prove availability before inventing workarounds. |
+| `bazel/repositories.bzl` GitHub URL | Update URL/tag, `sha256`, and `strip_prefix` when present. | Run `bazel mod deps --lockfile_mode=update`. |
+| `bazel/repositories.bzl` mirrored artifact URL | Add the new upstream artifact to the repository's artifact mirror/tooling repo first, then point the Bazel manifest at the mirrored artifact. | Open the artifact tooling draft PR first; the target PR depends on it. Never change a mirrored artifact URL to `github.com` or any direct upstream host without asking the user. |
+| Other URL source | Stop and ask. | Do not guess hosting policy. |
+
+For direct URL updates, compute and record the new `sha256` from the
+actual release artifact. Do not reuse checksums or hand-edit lockfiles.
+
+### Artifact mirror dependency flow
+
+When the current URL points at an organization-owned S3, GCS, or binary
+artifact mirror:
+
+1. Find the new upstream release artifact and checksum it.
+2. Locate or clone the artifact tooling repository named in project docs.
+3. Add the new artifact entry to the repo's dependency mirror manifest
+   with mirror filename, source URL, and `sha256`.
+4. Open an artifact tooling `--draft` PR from a branch named
+   `snyk/<cve-id>-<package>-<version>`.
+5. Update `bazel/repositories.bzl` in the target worktree only after
+   the tooling PR exists; tell reviewers the target PR cannot land until
+   the mirror update merges and uploads the artifact.
+
+### OpenSSL and FIPS
+
+OpenSSL findings need named-entry handling:
+
+- Search `bazel/repositories.bzl` by `name =`, not only package text.
+- Treat `@openssl` as the normal base OpenSSL build; update for routine
+  CVEs when tests pass.
+- Treat `@openssl-fips` as a CMVP-validated FIPS provider. Do not bump
+  it unless the target version is CMVP validated for the required FIPS
+  certificate path.
+
+Decision tree for `@openssl-fips`:
+
+1. Check whether a CMVP-validated fixed version exists.
+2. If yes, bump like a normal dependency and document the validation
+   source.
+3. If no, decide reachability: is the vulnerable algorithm or code path
+   used by the FIPS build? If not reachable, suppress through Snyk with
+   a specific rationale and security approval. If reachable or unknown,
+   escalate to security engineering for impact assessment; do not land a
+   blind version bump that invalidates FIPS.
+
+Useful sources to check during execution: NIST CMVP validated modules,
+NIST modules in process, project FIPS docs, and upstream OpenSSL
+security policy documents.
+
+### Backport assessment
+
+Before opening target PRs, inspect each affected branch, including the
+default branch if the first target is a release branch:
+
+```bash
+git show origin/<branch>:bazel/repositories.bzl | grep -A6 "<package>" || true
+git show origin/<branch>:MODULE.bazel | grep "<package>" || true
+```
+
+For every branch, record:
+
+- current dependency version;
+- correct fixed version for that branch line;
+- mechanism: BCR, GitHub URL, mirrored artifact, or other;
+- whether an artifact tooling PR is needed;
+- expected PR base branch.
+
+Present the backport plan to the user and ask which branches to proceed
+with before opening PRs. Each confirmed branch gets its own worktree and
+draft PR.
+
+### Bazel PR format
+
+Open all Bazel PRs as draft PRs with `gh pr create --draft` when the fix touches release/backport branches, mirrored artifacts, FIPS-sensitive dependencies, or uncertain BCR availability.
+
+Target PR body:
+
+1. Read `.github/pull_request_template.md` from the live target branch
+   when present; otherwise use the standard skill PR body.
+2. Preserve all HTML comments when a template exists.
+3. Fill the top summary with the package bump, CVE/Snyk id, affected
+   branches, and artifact-tooling dependency note if applicable.
+4. Leave backport checkboxes unchecked; reviewers decide.
+5. Fill release notes with a `### Bug Fixes` entry for the CVE fix.
+6. Append `FIXES=<ticket-key>` at the end when a ticket key was provided.
+
+Title and commit format for security bumps:
+
+```text
+build/deps: upgrade <package> to vX.Y.Z (<CVE-ID>)
+```
+
+If an artifact tooling PR exists, include its URL in the target PR body
+and in the final report.
+
+### Bazel report
+
+Return:
+
+- target branch and backport branches;
+- manifest path touched (`MODULE.bazel` or `bazel/repositories.bzl`);
+- old and new dependency versions;
+- lockfile command result for `bazel mod deps --lockfile_mode=update`;
+- artifact tooling draft PR URL, if any;
+- target draft PR URL per branch;
+- ticket key used or "none";
+- FIPS decision, if OpenSSL-related.
 
 ## Go ecosystem notes
 
