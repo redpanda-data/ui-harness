@@ -457,15 +457,15 @@ run_content_eval "$SCRIPT" "via" "hook checks for via"
 
 # ── REFERENCE content ───────────────────────────────────────────
 
-run_content_eval "$SKILL_DIR/REFERENCE.md" "sentence" "REFERENCE has capitalization rules"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Toast" "REFERENCE has toast message rules"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Error" "REFERENCE has error message rules"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Button" "REFERENCE has button label rules"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Learn more" "REFERENCE has link placement rules"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "allowlist" "REFERENCE has inclusive terminology table"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Directional" "REFERENCE has directional language guidance"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "Placeholder" "REFERENCE has placeholder format guidance"
-run_content_eval "$SKILL_DIR/REFERENCE.md" "[Ee]m [Dd]ash" "REFERENCE has em dash guidance"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "sentence" "REFERENCE has capitalization rules"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Toast" "REFERENCE has toast message rules"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Error" "REFERENCE has error message rules"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Button" "REFERENCE has button label rules"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Learn more" "REFERENCE has link placement rules"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "allowlist" "REFERENCE has inclusive terminology table"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Directional" "REFERENCE has directional language guidance"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "[Pp]laceholder" "REFERENCE has placeholder format guidance"
+run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "[Ee]m [Dd]ash" "REFERENCE has em dash guidance"
 
 # ── GLOSSARY content ────────────────────────────────────────────
 

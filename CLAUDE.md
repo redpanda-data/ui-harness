@@ -90,6 +90,8 @@ CI: `gh pr checks <n> --watch` | dev server | vitest watcher | container log | b
 
 ## UX Copy
 
+For UI strings, read `ux-copy/SKILL.md` and `ux-copy/REFERENCE.md` before writing or review.
+
 Sentence case | no Latin abbrev (for example, that is, and so on, through) | no ableist word | they/them
 
 ## Tests

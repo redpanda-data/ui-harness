@@ -66,6 +66,15 @@
             "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/rtk-rewrite.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
           }
         ]
+      },
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/ux-copy-context.sh\"; [ -x \"$f\" ] && exec \"$f\"; exit 0"
+          }
+        ]
       }
     ],
     "PostToolUse": [

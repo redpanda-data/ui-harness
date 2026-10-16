@@ -67,6 +67,9 @@
         "branch-safety-check.sh",
         "bash-verbose-guard.sh",
         "rtk-rewrite.sh"
+      ],
+      "Read|Edit|Write": [
+        "ux-copy-context.sh"
       ]
     },
     "PostToolUse": {
