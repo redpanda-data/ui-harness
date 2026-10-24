@@ -18,5 +18,8 @@ if [ -f "$file" ] && head -n 5 "$file" | grep -qE '@generated|DO NOT EDIT'; then
 
 skill_dir=$(cd "$(dirname "$0")/.." && pwd)
 context=$(printf 'UX copy guidance: %s/SKILL.md\nRead %s/REFERENCE.md for the writing/review rules.\n\n' "$skill_dir" "$skill_dir"
-  awk 'BEGIN { header=0 } /^---$/ && header < 2 { header++; next } header == 2 { print }' "$skill_dir/SKILL.md")
+  for entrypoint in "$skill_dir/.upstream/ux-copy/SKILL.md" "$skill_dir/SKILL.md"; do
+    printf '\nSource: %s\n' "$entrypoint"
+    awk 'BEGIN { header=0 } /^---$/ && header < 2 { header++; next } header == 2 { print }' "$entrypoint"
+  done)
 jq -n --arg context "$context" '{hookSpecificOutput:{hookEventName:"PreToolUse",additionalContext:$context}}'

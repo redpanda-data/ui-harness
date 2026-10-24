@@ -1,8 +1,9 @@
 # Tone evaluation
 
 Use when changing the skill or assessing whether it improves real UI copy. This suite
-covers ten core decisions plus six safety/context cases. It is not part of the shell hook
-suite and does not claim a measured tone improvement until candidate outputs are graded.
+covers core decisions, safety/context cases, and sentence clarity. It is not part of the
+shell hook suite and does not claim a measured tone improvement until candidate outputs
+are graded.
 
 ## Run and record
 
@@ -56,6 +57,15 @@ additional human approval as part of these cases, or equate compliance with an A
 | chat-boundary | Limits review to surrounding UI; renames sidebar to a noun heading such as Conversations; leaves conversational message out of scope. | Rewrites assistant response to third person or excludes all chat-screen UI. |
 | locale-and-precision | Retains exact quota and existing de-DE/24-hour formatting; rejects rounding and locale overrides. | Hardcoded US formatting, silent rounding, unit/time-zone changes, or claims visual verification. |
 | whole-view-review | Quotes subtitle and duplicate tooltip, names their patterns, removes both while retaining visible help. Reports ExportsPanel excerpt's three strings checked, no findings, and source-only excerpt coverage. | Isolated-string approval, deletes essential help, claims files were read from disk or rendered, invents counts, or edits despite review-only. |
+
+## Sentence clarity cases
+
+| ID | Pass evidence | Failure evidence |
+|---|---|---|
+| task-title | Uses a task title such as Create backup, noun-based navigation such as Backups, a noun section such as Schedule, and a specific Create backup button. | Applies the noun-heading rule to the task title, uses question headings, or changes the operation. |
+| modifier-scope | Quotes the original in review, identifies ambiguous scope, and makes admins the only role allowed to rotate signing keys. | Says rotation is the only admin action, invents a permission, or mechanically removes only and loses the access restriction. |
+| permission-grouping | Makes both the role requirement and billing.read mandatory for either export type. Preserves role and permission spelling. | Allows owners to bypass billing.read, requires both roles together, changes and/or semantics, or drops either export type. |
+| instruction-order | States permanent overwrite and checks the destination before directing the user to Replace file. Uses natural instructions, with one action per sentence. | Puts the warning/check after the destructive action, replaces visible help with a tooltip, or cuts permanent loss to meet a length budget. |
 
 ## Regression use
 

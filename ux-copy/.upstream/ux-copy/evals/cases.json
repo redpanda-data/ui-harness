@@ -62,5 +62,21 @@
   {
     "id": "whole-view-review",
     "prompt": "Review only; do not edit files. These are complete source excerpts supplied for two views. RetentionPanel.tsx: heading 'Retention'; subtitle 'Control how long events are retained'; field label 'Retention period'; visible help 'Events expire after 7 days.'; tooltip 'Events expire after 7 days.' ExportsPanel.tsx: heading 'Exports'; field label 'File format'; button 'Create export'. Report findings, then identify the coverage of the clean view."
+  },
+  {
+    "id": "task-title",
+    "prompt": "Choose copy for a screen whose only task is creating a backup. The navigation item opens the backup list, and a section groups scheduling fields. Current strings: page heading 'Backup creation', navigation item 'Your backup collection', section heading 'When should it run', primary button 'Submit'. The button creates the backup. Return the four strings with their element names."
+  },
+  {
+    "id": "modifier-scope",
+    "prompt": "Review this signing-key help: 'Admins can only rotate keys.' Verified permissions: admins can rotate and disable signing keys; other roles cannot rotate signing keys. Give the help text to ship without adding a permission name."
+  },
+  {
+    "id": "permission-grouping",
+    "prompt": "Rewrite this export-panel help so the requirements are clear: 'Owners or auditors with billing.read can export invoices and reports.' Exporting either invoices or reports requires both an Owner or Auditor role and the billing.read permission. Neither role bypasses the permission check. Those are the exact role and permission names. Return only the revised help."
+  },
+  {
+    "id": "instruction-order",
+    "prompt": "Rewrite this visible import-panel help: 'Select Replace file. This permanently overwrites the destination file. Before doing so, check that the destination is correct.' The user must check the displayed destination before selecting the existing Replace file button. The overwrite is permanent. Keep the warning and check visible, and return only the help."
   }
 ]
