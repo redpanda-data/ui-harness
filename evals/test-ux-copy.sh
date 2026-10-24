@@ -6,43 +6,24 @@ run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Remove ambiguous readings" "
 run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Task-screen heading" "latest copy guidance distinguishes task titles"
 run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "Make grouped requirements explicit" "latest copy guidance preserves permission grouping"
 run_content_eval "$REPO_ROOT/ux-copy/REFERENCE.md" "warnings before the action" "latest copy guidance puts warnings before actions"
-run_content_eval "$REPO_ROOT/ux-copy/SKILL.md" ".upstream/ux-copy/SKILL.md" "host adapter loads the pinned upstream skill"
-run_content_eval "$REPO_ROOT/ux-copy/SKILL.md" "Writing or review never installs" "host adapter preserves installation boundary"
+run_content_eval "$REPO_ROOT/ux-copy/SKILL.md" "Setup is separate from writing" "copy guidance preserves installation boundary"
 
-if python3 - "$REPO_ROOT/ux-copy" <<'PY'
-import hashlib
-import json
-from pathlib import Path
-import re
-import sys
-
-root = Path(sys.argv[1])
-manifest = json.loads((root / "upstream.json").read_text())
-assert manifest["repository"] == "https://github.com/malinskibeniamin/skills"
-assert re.fullmatch(r"[0-9a-f]{40}", manifest["revision"])
-snapshot = root / ".upstream"
-paths = {str(p.relative_to(snapshot)) for p in snapshot.rglob("*") if p.is_file() or p.is_symlink()}
-assert paths == set(manifest["files"]), "snapshot file inventory drift"
-for path, expected in manifest["files"].items():
-    file = snapshot / path
-    data = file.readlink().as_posix().encode() if file.is_symlink() else file.read_bytes()
-    assert hashlib.sha256(data).hexdigest() == expected["sha256"], path
-    assert file.is_symlink() == (expected["mode"] == "120000"), path
-    if not file.is_symlink():
-        assert bool(file.stat().st_mode & 0o111) == (expected["mode"] == "100755"), path
-    assert file.resolve().is_relative_to(snapshot.resolve()), path
-for path, target in {"REFERENCE.md": "ux-copy/REFERENCE.md", "GLOSSARY.md": "ux-copy/GLOSSARY.md", "evals": "ux-copy/evals"}.items():
-    assert (root / path).is_symlink() and (root / path).resolve() == (snapshot / target).resolve(), path
-cases = json.loads((root / "evals/cases.json").read_text())
-assert {"task-title", "modifier-scope", "permission-grouping", "instruction-order"} <= {case["id"] for case in cases}
-assert (snapshot / "LICENSE").is_file()
-assert (snapshot / "ux-copy/scripts/_hook-lib.sh").resolve() == (snapshot / "shared/hook-lib.sh").resolve()
-PY
-then
-  echo '  PASS  pinned upstream snapshot, links, modes, digests and clarity cases'; PASS=$((PASS + 1))
+if [ -f "$REPO_ROOT/ux-copy/REFERENCE.md" ] && [ ! -L "$REPO_ROOT/ux-copy/REFERENCE.md" ] \
+  && [ -f "$REPO_ROOT/ux-copy/GLOSSARY.md" ] && [ ! -L "$REPO_ROOT/ux-copy/GLOSSARY.md" ] \
+  && [ -d "$REPO_ROOT/ux-copy/evals" ] && [ ! -L "$REPO_ROOT/ux-copy/evals" ] \
+  && [ ! -e "$REPO_ROOT/ux-copy/upstream.json" ] && [ ! -e "$REPO_ROOT/ux-copy/.upstream" ]; then
+  echo '  PASS  copy guidance is bundled as plain files'; PASS=$((PASS + 1))
 else
-  echo '  FAIL  pinned upstream snapshot, links, modes, digests or clarity cases'; FAIL=$((FAIL + 1))
-  ERRORS="$ERRORS\n  FAIL: UX copy upstream snapshot verification"
+  echo '  FAIL  copy guidance depends on vendoring setup'; FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: UX copy plain-file packaging"
+fi
+
+if jq -e 'map(.id) | contains(["task-title", "modifier-scope", "permission-grouping", "instruction-order"])' \
+  "$REPO_ROOT/ux-copy/evals/cases.json" >/dev/null; then
+  echo '  PASS  latest clarity tone cases are bundled'; PASS=$((PASS + 1))
+else
+  echo '  FAIL  latest clarity tone cases are missing'; FAIL=$((FAIL + 1))
+  ERRORS="$ERRORS\n  FAIL: UX copy clarity cases"
 fi
 
 for ux_plugin in .claude-plugin/plugin.json .codex-plugin/plugin.json; do
@@ -70,8 +51,7 @@ ux_context_case() {
         .hookSpecificOutput.hookEventName == "PreToolUse"
         and (.hookSpecificOutput.additionalContext | contains($skill) and contains($reference)
           and contains("State one useful point per sentence") and contains("## Write") and contains("## Review"))
-        and (.hookSpecificOutput.additionalContext | contains(".upstream/ux-copy/SKILL.md")
-          and contains("Writing or review never installs"))
+        and (.hookSpecificOutput.additionalContext | contains(".upstream") | not)
         and (has("decision") | not)
         and (.hookSpecificOutput | has("permissionDecision") | not)
       ' >/dev/null 2>&1; then valid=true; fi

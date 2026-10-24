@@ -11,8 +11,7 @@ Install hooks; do not use regex results as a tone verdict. For writing or review
 1. Copy executable `scripts/ux-copy-check.sh`, `scripts/prose-style-check.sh`, and
    `scripts/_hook-lib.sh` into the project's `.claude/hooks/`.
 2. Add both check scripts to PostToolUse `Edit|Write`, preserving existing hooks.
-3. Bundle the sibling `ux-copy/` skill, including its hidden `.upstream/` snapshot,
-   scripts, reference and evals. Preserve symlinks within the bundle.
+3. Bundle the sibling `ux-copy/` skill, including its scripts, reference and evals.
    Expose it through the host's project skill directory. For Claude, configure its
    `scripts/ux-copy-context.sh` on PreToolUse `Read|Edit|Write`; use an absolute path
    or quote `${CLAUDE_PROJECT_DIR}`. Other hosts need scoped instructions to read it.
