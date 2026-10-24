@@ -227,6 +227,18 @@
             ]
           }
         ]
+      },
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/run-hook.sh",
+            "args": [
+              "ux-copy-context.sh"
+            ]
+          }
+        ]
       }
     ],
     "PostToolUse": [

@@ -61,6 +61,8 @@ Subagent model: Explore -> Sonnet (codebase greps don't need Opus). Plan/Review 
 
 ## UX Copy
 
+For UI strings, read `ux-copy/SKILL.md` and `ux-copy/REFERENCE.md` before writing or review.
+
 Sentence case. No Latin abbreviations (for example, that is, and so on, through). No ableist language. Gender-neutral.
 
 ## Tests

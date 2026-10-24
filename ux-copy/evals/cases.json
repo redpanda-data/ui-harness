@@ -1,0 +1,82 @@
+[
+  {
+    "id": "headings",
+    "prompt": "Tighten these policy-editor section headings, in order: 'What should be monitored', 'How sensitive it should be', 'Compare against past events', 'What happens on a match'. The sections select an input, sensitivity, a backtest, and an action. Return only the four headings, one per line."
+  },
+  {
+    "id": "card-fact",
+    "prompt": "A card is titled 'Rate limits'. Its subtitle is 'Limits apply per API key and reset every 45 seconds.' The subtitle adds a fact. Should it stay? Give the resulting card structure without losing information."
+  },
+  {
+    "id": "mode-description",
+    "prompt": "Rewrite the help below a mode selector: 'Play it safe. Start with Preview; turn on Apply once the results feel right.' Preview records matches without changing traffic. Apply blocks matching requests. These are descriptive settings, not an onboarding tutorial."
+  },
+  {
+    "id": "descriptive-person",
+    "prompt": "Review this supplemental tooltip for the 'Owner' column in a jobs table: 'Shows the person you assigned to handle this job.' Assignment determines who receives failure notifications. Suggest the copy to ship."
+  },
+  {
+    "id": "filler-and-domain-noun",
+    "prompt": "Tighten this panel. Heading: 'Powerful, seamless key management'. Description: 'Additionally, this robust gateway serves as a central point, ensuring effortless governance.' Field label: 'API key'. Verified behavior: the gateway checks each request against the configured policies. Preserve the existing field and its meaning."
+  },
+  {
+    "id": "filtered-empty",
+    "prompt": "Tighten this filtered jobs list empty state: 'No jobs match your filters. Try a different search term or clear the active filters.' A working Clear filters button already sits below the message. Return the message and button label."
+  },
+  {
+    "id": "neutral-empty",
+    "prompt": "Design liked 'Your future jobs are taking a nap. Nothing here… yet!' for an empty jobs list. The user can create jobs with the existing Create job button. Is that copy ready? Give a replacement if needed."
+  },
+  {
+    "id": "known-permission",
+    "prompt": "Improve 'You do not have access to this report. Ask an administrator to grant you access.' The server identifies the missing permission as reports.read. There is no request-access workflow in the app."
+  },
+  {
+    "id": "sentence-concision",
+    "prompt": "Shorten this download-panel help without changing its meaning. Return only the revised text: 'It is important to note that backup downloads remain available for a period of 24 hours after the backup is created. This means that the download link expires 24 hours after backup creation. In the event that a backup exceeds 2 GB, its notification email may take longer to arrive. Backups larger than 2 GB may have delayed notification emails.' All facts are verified."
+  },
+  {
+    "id": "prose-boundary",
+    "prompt": "Using ux-copy, review the style of docs/retention-guide.md, a prose documentation page. No file contents are attached."
+  },
+  {
+    "id": "unknown-error",
+    "prompt": "Make this payment error more specific: 'Something went wrong. Try again shortly.' The only available response is a generic failure code. The cause and payment outcome are unknown, and retry safety is undocumented. Return UI copy and flag any information needed before adding recovery advice."
+  },
+  {
+    "id": "destructive-warning",
+    "prompt": "Shorten this confirmation for production-logs: 'Deleting this cluster permanently deletes all stored events. Exported files remain available. The cluster cannot be restored.' All three facts are verified. Current buttons are Yes and No. Give the dialog copy and controls."
+  },
+  {
+    "id": "instructions-and-labels",
+    "prompt": "Review this sign-in form copy without changing its behavior. Label: 'ID token'. Visible help: 'Paste the ID token from your identity provider.' Placeholder: 'eyJ…'. Checkbox label: 'Keep session active'. The field requires a persistent accessible label. Should every string become a third-person noun phrase?"
+  },
+  {
+    "id": "chat-boundary",
+    "prompt": "A chat screen contains the assistant message 'Would you like me to summarize your report?' and a sidebar heading 'What you talked about before'. Sidebar items are saved conversations. Review the copy with ux-copy."
+  },
+  {
+    "id": "locale-and-precision",
+    "prompt": "Review a settings view for a user whose saved preferences are de-DE and 24-hour time. An existing locale formatter displays a quota of exactly 1,024 requests and the maintenance start at 14:30 Europe/Berlin. A suggested copy change hardcodes '1K requests' and '2:30 PM'. What should change?"
+  },
+  {
+    "id": "whole-view-review",
+    "prompt": "Review only; do not edit files. These are complete source excerpts supplied for two views. RetentionPanel.tsx: heading 'Retention'; subtitle 'Control how long events are retained'; field label 'Retention period'; visible help 'Events expire after 7 days.'; tooltip 'Events expire after 7 days.' ExportsPanel.tsx: heading 'Exports'; field label 'File format'; button 'Create export'. Report findings, then identify the coverage of the clean view."
+  },
+  {
+    "id": "task-title",
+    "prompt": "Choose copy for a screen whose only task is creating a backup. The navigation item opens the backup list, and a section groups scheduling fields. Current strings: page heading 'Backup creation', navigation item 'Your backup collection', section heading 'When should it run', primary button 'Submit'. The button creates the backup. Return the four strings with their element names."
+  },
+  {
+    "id": "modifier-scope",
+    "prompt": "Review this signing-key help: 'Admins can only rotate keys.' Verified permissions: admins can rotate and disable signing keys; other roles cannot rotate signing keys. Give the help text to ship without adding a permission name."
+  },
+  {
+    "id": "permission-grouping",
+    "prompt": "Rewrite this export-panel help so the requirements are clear: 'Owners or auditors with billing.read can export invoices and reports.' Exporting either invoices or reports requires both an Owner or Auditor role and the billing.read permission. Neither role bypasses the permission check. Those are the exact role and permission names. Return only the revised help."
+  },
+  {
+    "id": "instruction-order",
+    "prompt": "Rewrite this visible import-panel help: 'Select Replace file. This permanently overwrites the destination file. Before doing so, check that the destination is correct.' The user must check the displayed destination before selecting the existing Replace file button. The overwrite is permanent. Keep the warning and check visible, and return only the help."
+  }
+]
